@@ -1,9 +1,9 @@
 # evilD UI
 
-[![GitHub release](https://img.shields.io/github/v/release/greenovate/evildui)](https://github.com/greenovate/evildui/releases)
+[![GitHub release](https://img.shields.io/github/v/release/evilD-WoW/evildui)](https://github.com/evilD-WoW/evildui/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A clean, lightweight UI addon for World of Warcraft focused on questing and PVP. evilD UI provides ElvUI-style functionality without the complexity - just clean action bars, intuitive movers, mouseover keybinds, and easy profile management.
+A clean, lightweight UI addon for World of Warcraft focused on questing and PVP. Built by **evild on Mal'Ganis**. evilD UI provides powerful customization without the bloat - clean action bars, intuitive movers, mouseover keybinds, custom UI panels, and easy profile management.
 
 ## Features
 
@@ -36,16 +36,18 @@ A clean, lightweight UI addon for World of Warcraft focused on questing and PVP.
 - Scale adjustment for all unit frames
 - Supports: Player, Target, Focus, Pet, Party, Boss, Arena, ToT, Cast Bar, Buffs
 
+## 📥 Download
+
+### [⬇️ Download Latest Release (v0.0.2)](https://github.com/evilD-WoW/evildui/releases/latest)
+
+Click the link above, then download `evildui-v0.0.2.zip` from the Assets section.
+
 ## Installation
 
-### CurseForge App (Recommended)
-1. Search for "evildui" in the CurseForge app
-2. Click Install
-
-### Manual Installation
-1. Download the latest release
-2. Extract to `World of Warcraft/_retail_/Interface/AddOns/`
-3. Ensure the folder is named `evildui` (not `evildui-main` or similar)
+1. Download `evildui-vX.X.X.zip` from [Releases](https://github.com/evilD-WoW/evildui/releases)
+2. Extract the `evildui` folder to `World of Warcraft/_retail_/Interface/AddOns/`
+3. Restart WoW or type `/reload`
+4. Type `/evildui` to open settings
 
 ## Usage
 
@@ -99,8 +101,8 @@ Each of the 5 action bars can be configured with:
 **Q: Is this compatible with other action bar addons?**
 A: evildui replaces Blizzard's default action bars. It may conflict with other action bar addons like Bartender or Dominos.
 
-**Q: Can I use this with ElvUI?**
-A: Not recommended. Both addons modify similar UI elements and will likely conflict.
+**Q: Does this work with other UI addons?**
+A: evilD UI replaces core UI elements. It may conflict with addons that modify the same frames.
 
 **Q: Why can't I move frames in combat?**
 A: WoW's secure frame system prevents modifications during combat to prevent exploits. Wait for combat to end.
@@ -110,8 +112,7 @@ A: Go to Profiles > Export Profile, copy the text string, and share it. Others c
 
 ## Support
 
-- [Report Issues](https://github.com/yourusername/evildui/issues)
-- [CurseForge Comments](https://www.curseforge.com/wow/addons/evildui)
+- [Report Issues](https://github.com/evilD-WoW/evildui/issues)
 
 ## Contributing
 
@@ -129,3 +130,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Blizzard Entertainment for World of Warcraft
 - The WoW addon development community
 - All contributors and testers
+
+---
+
+**Created by evild @ Mal'Ganis**

@@ -25,6 +25,12 @@ function E:InitializeMinimap()
         Minimap:SetScale(db.minimap.scale)
     end
     
+    -- Apply rotation setting
+    self:ToggleMinimapRotation(db.minimap.rotate)
+    
+    -- Apply zone text position
+    self:UpdateZoneTextPosition()
+    
     -- Setup mover if enabled
     if db.minimap.movable then
         self:SetupMinimapMover()
@@ -46,6 +52,79 @@ function E:InitializeMinimap()
     -- Add coords if enabled
     if db.minimap.coords then
         self:AddMinimapCoords()
+    end
+end
+
+-- Update zone text position (top, bottom, or hidden)
+-- This hides/shows the ENTIRE top header bar including zone, time, difficulty icons, etc.
+function E:UpdateZoneTextPosition()
+    local db = self:GetDB()
+    if not db.minimap then return end
+    
+    local position = db.minimap.zoneText or "top"
+    
+    -- All the elements in the top header area that need to be hidden
+    local elementsToManage = {
+        MinimapCluster and MinimapCluster.ZoneTextButton,
+        MinimapCluster and MinimapCluster.BorderTop,
+        MinimapCluster and MinimapCluster.Tracking,
+        MinimapCluster and MinimapCluster.IndicatorFrame,
+        MinimapCluster and MinimapCluster.InstanceDifficulty,
+        TimeManagerClockButton,
+        GameTimeFrame,
+        MinimapZoneTextButton,
+        MinimapZoneText,
+    }
+    
+    -- Also find any header frame
+    if MinimapCluster then
+        for _, child in pairs({MinimapCluster:GetChildren()}) do
+            local name = child:GetName()
+            if name and (name:find("Zone") or name:find("Border") or name:find("Time") or name:find("Indicator") or name:find("Difficulty") or name:find("Header")) then
+                table.insert(elementsToManage, child)
+            end
+        end
+    end
+    
+    if position == "hide" then
+        for _, element in ipairs(elementsToManage) do
+            if element and element.Hide then
+                element:Hide()
+                element:SetAlpha(0)
+            end
+        end
+    elseif position == "bottom" then
+        -- Hide the top bar elements
+        for _, element in ipairs(elementsToManage) do
+            if element and element.Hide then
+                element:Hide()
+                element:SetAlpha(0)
+            end
+        end
+        -- Show just zone text at bottom
+        local zoneFrame = MinimapCluster and MinimapCluster.ZoneTextButton or MinimapZoneTextButton
+        if zoneFrame then
+            zoneFrame:Show()
+            zoneFrame:SetAlpha(1)
+            zoneFrame:ClearAllPoints()
+            zoneFrame:SetPoint("TOP", Minimap, "BOTTOM", 0, -5)
+        end
+    else -- "top" (default) - restore everything
+        for _, element in ipairs(elementsToManage) do
+            if element and element.Show then
+                element:Show()
+                element:SetAlpha(1)
+            end
+        end
+    end
+end
+
+-- Toggle minimap rotation (map rotates with player facing)
+function E:ToggleMinimapRotation(enabled)
+    if enabled then
+        SetCVar("rotateMinimap", "1")
+    else
+        SetCVar("rotateMinimap", "0")
     end
 end
 
@@ -96,9 +175,13 @@ function E:RestoreRoundMinimap()
     -- Restore original circular mask
     Minimap:SetMaskTexture("Textures\\MinimapMask")
     
+    -- Hide our custom border
     if Minimap.evildui_border then
         Minimap.evildui_border:Hide()
     end
+    
+    -- Restore Blizzard's border if it exists
+    if MinimapBorder then MinimapBorder:Show() end
 end
 
 -- Toggle square minimap
@@ -217,8 +300,10 @@ end
 function E:AddMinimapCoords()
     if Minimap.evildui_coords then return end
     
-    local coords = Minimap:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    coords:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 5)
+    -- Create coords on MinimapCluster so it's not clipped by the minimap mask
+    local parent = MinimapCluster or Minimap:GetParent() or Minimap
+    local coords = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    coords:SetPoint("TOP", Minimap, "BOTTOM", 0, -2)
     coords:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
     coords:SetTextColor(1, 1, 1)
     

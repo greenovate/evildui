@@ -1,20 +1,17 @@
 ## Interface: 110207
 ## Title: |cff9900ffevilD|r |cffffffffUI|r
 ## Notes: Clean questing and PVP interface addon with movers, mouseover keybinds, and profiles
-## Author: evilD
-## Version: @project-version@
+## Author: evild @ Mal'Ganis
+## Version: 0.0.2
 ## SavedVariables: evilduidb
 ## SavedVariablesPerCharacter: evilduichardb
 ## IconTexture: Interface\Icons\Achievement_PVP_Legion08
 ## Category: Action Bars
 
-## X-Website: https://www.curseforge.com/wow/addons/evildui
+## X-Website: https://github.com/evilD-WoW/evildui
 ## X-License: MIT
 ## X-Category: Action Bars
 ## X-Localizations: enUS
-## X-Curse-Project-ID: PROJECTID
-## X-Wago-ID: WAGOID
-## X-WoWI-ID: WOWIID
 
 # Localization
 Locales\Locales.lua
@@ -29,6 +26,7 @@ Core\UnitFrames.lua
 Core\Chat.lua
 Core\DataBars.lua
 Core\Minimap.lua
+Core\Panels.lua
 Core\Keybinds.lua
 Core\Profiles.lua
 Core\Config.lua

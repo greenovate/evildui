@@ -82,7 +82,7 @@ function E:CreateChatCopyButton(chatFrame, index)
     
     btn.icon = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     btn.icon:SetPoint("CENTER")
-    btn.icon:SetText("📋")
+    btn.icon:SetText("C")
     btn.icon:SetTextColor(0.7, 0.7, 0.7)
     
     btn:SetScript("OnEnter", function(self)

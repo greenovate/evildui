@@ -4,6 +4,10 @@
 
 local addonName, E = ...
 
+-- Database schema version - increment this when making breaking changes
+-- that require automatic data migration/cleanup
+local DB_VERSION = 4
+
 -- Available fonts
 E.Fonts = {
     ["Friz Quadrata TT"] = "Fonts\\FRIZQT__.TTF",
@@ -90,6 +94,26 @@ local defaults = {
             bar5 = CreateBarDefaults(false, 6),
         },
         
+        -- Menu bar (micro buttons) settings
+        menuBar = {
+            enabled = true,
+            buttonOrder = {
+                "CharacterMicroButton",
+                "ProfessionMicroButton",
+                "PlayerSpellsMicroButton",
+                "AchievementMicroButton",
+                "QuestLogMicroButton",
+                "GuildMicroButton",
+                "LFDMicroButton",
+                "CollectionsMicroButton",
+                "EJMicroButton",
+                "HousingMicroButton",
+                "StoreMicroButton",
+                "MainMenuMicroButton",
+            },
+            hiddenButtons = {},
+        },
+        
         -- Unit frame settings
         unitFrames = {
             enabled = true,
@@ -146,6 +170,8 @@ local defaults = {
             style = true,
             coords = true,
             showButton = true,
+            rotate = false,
+            zoneText = "top", -- "top", "bottom", or "hide"
         },
     },
     
@@ -164,6 +190,63 @@ function E:GetPlayerKey()
     return name .. "-" .. realm
 end
 
+-- Migrate database to current schema version
+-- This runs automatically and cleans up problematic data
+local function MigrateDatabase()
+    if not evilduidb then return end
+    
+    local currentVersion = evilduidb.dbVersion or 1
+    
+    -- Migration from v1 to v2: Remove BuffFrame/DebuffFrame positions
+    -- These frames use EditMode in TWW and can't be hooked safely
+    if currentVersion < 2 then
+        E:DebugPrint("Running database migration v1 -> v2")
+        
+        -- Clean up all profiles
+        if evilduidb.profiles then
+            for profileName, profile in pairs(evilduidb.profiles) do
+                if profile.positions then
+                    profile.positions["BuffFrame"] = nil
+                    profile.positions["DebuffFrame"] = nil
+                    E:DebugPrint("  Cleaned BuffFrame/DebuffFrame from profile: " .. profileName)
+                end
+            end
+        end
+        
+        -- Also clean character DB
+        if evilduichardb and evilduichardb.positions then
+            evilduichardb.positions["BuffFrame"] = nil
+            evilduichardb.positions["DebuffFrame"] = nil
+        end
+    end
+    
+    -- Add future migrations here:
+    -- if currentVersion < 3 then ... end
+    
+    -- Migration from v2 to v3: Reset MicroBar position (was incorrectly saved)
+    if currentVersion < 3 then
+        E:DebugPrint("Running database migration v2 -> v3")
+        
+        -- Clean up MicroBar position from all profiles
+        if evilduidb.profiles then
+            for profileName, profile in pairs(evilduidb.profiles) do
+                if profile.positions then
+                    profile.positions["MicroBar"] = nil
+                    E:DebugPrint("  Reset MicroBar position in profile: " .. profileName)
+                end
+            end
+        end
+        
+        -- Also clean character DB
+        if evilduichardb and evilduichardb.positions then
+            evilduichardb.positions["MicroBar"] = nil
+        end
+    end
+    
+    -- Update version
+    evilduidb.dbVersion = DB_VERSION
+end
+
 -- Initialize database
 function E:InitializeDatabase()
     -- Account-wide saved variables
@@ -174,6 +257,7 @@ function E:InitializeDatabase()
             global = {
                 version = self.Version,
             },
+            dbVersion = DB_VERSION,
         }
     end
     
@@ -181,6 +265,9 @@ function E:InitializeDatabase()
     if not evilduichardb then
         evilduichardb = {}
     end
+    
+    -- Run database migrations (cleans up old/problematic data automatically)
+    MigrateDatabase()
     
     -- Get current profile name
     local playerKey = self:GetPlayerKey()

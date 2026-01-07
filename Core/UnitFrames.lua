@@ -283,6 +283,12 @@ local function CreateUnitFrame(unitId, def)
     -- Attach frame to mover
     if mover then
         frame:SetAllPoints(mover)
+        -- After attaching to mover, update layout to match mover size
+        C_Timer.After(0.1, function()
+            if frame.UpdateLayout then
+                frame:UpdateLayout()
+            end
+        end)
     else
         frame:SetPoint(def.defaultPoint, UIParent, def.defaultPoint, def.defaultX, def.defaultY)
     end
@@ -552,6 +558,7 @@ function E:UpdateAuras(frame)
                 edgeSize = 1,
             })
             icon:SetBackdropBorderColor(0, 0, 0, 1)
+            icon:EnableMouse(true)
             
             icon.texture = icon:CreateTexture(nil, "ARTWORK")
             icon.texture:SetAllPoints()
@@ -570,6 +577,21 @@ function E:UpdateAuras(frame)
         
         icon.texture:SetTexture(aura.icon)
         icon:Show()
+        
+        -- Store aura data for tooltip
+        icon.auraIndex = i
+        icon.filter = filter
+        icon.unit = frame.unit
+        
+        -- Set up tooltip handlers
+        icon:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
+            GameTooltip:SetUnitAura(self.unit, self.auraIndex, self.filter)
+            GameTooltip:Show()
+        end)
+        icon:SetScript("OnLeave", function(self)
+            GameTooltip:Hide()
+        end)
         
         if aura.applications and aura.applications > 1 then
             icon.count:SetText(aura.applications)

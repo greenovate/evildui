@@ -106,6 +106,7 @@ function E:OnLogin()
     self:InitializeKeybinds()
     self:InitializeDataBars()
     self:InitializeMinimap()
+    self:InitializePanels()
     
     -- Register slash commands
     self:RegisterSlashCommands()

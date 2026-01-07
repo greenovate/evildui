@@ -32,9 +32,11 @@ local COLORS = {
 local Categories = {
     { id = "general", name = "General", icon = "Interface\\Icons\\INV_Misc_Gear_01" },
     { id = "actionbars", name = "Action Bars", icon = "Interface\\Icons\\Spell_Nature_EnchantArmor" },
+    { id = "menubar", name = "Menu Bar", icon = "Interface\\Icons\\INV_Misc_Bag_10" },
     { id = "unitframes", name = "Unit Frames", icon = "Interface\\Icons\\Spell_Shadow_Sacrificial" },
     { id = "databars", name = "Data Bars", icon = "Interface\\Icons\\INV_Misc_Spyglass_03" },
     { id = "minimap", name = "Minimap", icon = "Interface\\Icons\\INV_Misc_Map02" },
+    { id = "panels", name = "UI Panels", icon = "Interface\\Icons\\INV_Misc_EngGizmos_20" },
     { id = "chat", name = "Chat", icon = "Interface\\Icons\\INV_Misc_Note_01" },
     { id = "fonts", name = "Fonts", icon = "Interface\\Icons\\INV_Inscription_Scroll" },
     { id = "movers", name = "Movers", icon = "Interface\\Icons\\Ability_Vehicle_LaunchPlayer" },
@@ -58,6 +60,7 @@ function E:OpenConfig()
     end
     
     ConfigFrame = self:CreateConfigFrame()
+    self.ConfigFrame = ConfigFrame  -- Store on E table for movers to access
     ConfigFrame:Show()
 end
 
@@ -171,62 +174,49 @@ function E:CreateConfigFrame()
     frame.content = content
     
     -- Top action bar with Movers and Reload buttons (always visible)
-    local topBar = CreateFrame("Frame", nil, content, "BackdropTemplate")
-    topBar:SetHeight(40)
+    local topBar = CreateFrame("Frame", nil, content)
+    topBar:SetHeight(32)
     topBar:SetPoint("TOPLEFT", 0, 0)
     topBar:SetPoint("TOPRIGHT", 0, 0)
-    topBar:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8" })
-    topBar:SetBackdropColor(unpack(COLORS.bgMid))
     frame.topBar = topBar
     
-    -- Toggle Movers button
+    -- Separator line at bottom of top bar
+    local topSep = topBar:CreateTexture(nil, "ARTWORK")
+    topSep:SetHeight(1)
+    topSep:SetPoint("BOTTOMLEFT", 0, 0)
+    topSep:SetPoint("BOTTOMRIGHT", 0, 0)
+    topSep:SetColorTexture(0.2, 0.2, 0.2, 1)
+    
+    -- Toggle Movers button - compact style
     local moversBtn = CreateFrame("Button", nil, topBar, "BackdropTemplate")
-    moversBtn:SetSize(120, 28)
-    moversBtn:SetPoint("LEFT", 10, 0)
-    moversBtn:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
-    })
-    moversBtn:SetBackdropColor(unpack(COLORS.accent))
-    moversBtn:SetBackdropBorderColor(unpack(COLORS.accentDim))
-    moversBtn.text = moversBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    moversBtn:SetSize(90, 22)
+    moversBtn:SetPoint("LEFT", 12, 0)
+    moversBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    moversBtn:SetBackdropColor(0.4, 0.25, 0.5, 1)
+    moversBtn:SetBackdropBorderColor(0.3, 0.2, 0.4, 1)
+    moversBtn.text = moversBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     moversBtn.text:SetPoint("CENTER")
     moversBtn.text:SetText("Toggle Movers")
-    moversBtn:SetScript("OnEnter", function(self)
-        self:SetBackdropColor(0.7, 0.5, 0.9, 1)
-    end)
-    moversBtn:SetScript("OnLeave", function(self)
-        self:SetBackdropColor(unpack(COLORS.accent))
-    end)
+    moversBtn:SetScript("OnEnter", function(s) s:SetBackdropColor(0.5, 0.35, 0.6, 1) end)
+    moversBtn:SetScript("OnLeave", function(s) s:SetBackdropColor(0.4, 0.25, 0.5, 1) end)
     moversBtn:SetScript("OnClick", function()
         E:ToggleMoverMode()
         if ConfigFrame then ConfigFrame:Hide() end
     end)
     
-    -- Reload UI button
+    -- Reload UI button - compact style
     local reloadBtn = CreateFrame("Button", nil, topBar, "BackdropTemplate")
-    reloadBtn:SetSize(100, 28)
-    reloadBtn:SetPoint("LEFT", moversBtn, "RIGHT", 10, 0)
-    reloadBtn:SetBackdrop({
-        bgFile = "Interface\\Buttons\\WHITE8X8",
-        edgeFile = "Interface\\Buttons\\WHITE8X8",
-        edgeSize = 1,
-    })
-    reloadBtn:SetBackdropColor(unpack(COLORS.green))
-    reloadBtn:SetBackdropBorderColor(0.2, 0.6, 0.2, 1)
-    reloadBtn.text = reloadBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    reloadBtn:SetSize(70, 22)
+    reloadBtn:SetPoint("LEFT", moversBtn, "RIGHT", 8, 0)
+    reloadBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    reloadBtn:SetBackdropColor(0.25, 0.45, 0.25, 1)
+    reloadBtn:SetBackdropBorderColor(0.2, 0.35, 0.2, 1)
+    reloadBtn.text = reloadBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     reloadBtn.text:SetPoint("CENTER")
     reloadBtn.text:SetText("Reload UI")
-    reloadBtn:SetScript("OnEnter", function(self)
-        self:SetBackdropColor(0.4, 0.9, 0.4, 1)
-    end)
-    reloadBtn:SetScript("OnLeave", function(self)
-        self:SetBackdropColor(unpack(COLORS.green))
-    end)
-    reloadBtn:SetScript("OnClick", function()
-        ReloadUI()
-    end)
+    reloadBtn:SetScript("OnEnter", function(s) s:SetBackdropColor(0.35, 0.55, 0.35, 1) end)
+    reloadBtn:SetScript("OnLeave", function(s) s:SetBackdropColor(0.25, 0.45, 0.25, 1) end)
+    reloadBtn:SetScript("OnClick", function() ReloadUI() end)
     
     -- Panel container (below top bar)
     local panelContainer = CreateFrame("Frame", nil, content)
@@ -238,9 +228,11 @@ function E:CreateConfigFrame()
     frame.categoryPanels = {}
     frame.categoryPanels.general = self:CreateGeneralPanel(panelContainer)
     frame.categoryPanels.actionbars = self:CreateActionBarsPanel(panelContainer)
+    frame.categoryPanels.menubar = self:CreateMenuBarPanel(panelContainer)
     frame.categoryPanels.unitframes = self:CreateUnitFramesPanel(panelContainer)
     frame.categoryPanels.databars = self:CreateDataBarsPanel(panelContainer)
     frame.categoryPanels.minimap = self:CreateMinimapPanel(panelContainer)
+    frame.categoryPanels.panels = self:CreatePanelsPanel(panelContainer)
     frame.categoryPanels.chat = self:CreateChatPanel(panelContainer)
     frame.categoryPanels.fonts = self:CreateFontsPanel(panelContainer)
     frame.categoryPanels.movers = self:CreateMoversPanel(panelContainer)
@@ -449,7 +441,7 @@ function E:CreateDropdown(parent, label, options, getValue, setValue)
     
     dropdown.arrow = dropdown:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     dropdown.arrow:SetPoint("RIGHT", -8, 0)
-    dropdown.arrow:SetText("▼")
+    dropdown.arrow:SetText("v")
     dropdown.arrow:SetTextColor(unpack(COLORS.textDim))
     
     local function UpdateText()
@@ -779,6 +771,304 @@ function E:RefreshBarSettings(panel)
     if c.scaleSlider and c.scaleSlider.Refresh then c.scaleSlider:Refresh() end
     if c.backdropCheck and c.backdropCheck.Refresh then c.backdropCheck:Refresh() end
     if c.borderCheck and c.borderCheck.Refresh then c.borderCheck:Refresh() end
+end
+
+-- Menu Bar Panel - Drag and drop button ordering with visibility toggles
+function E:CreateMenuBarPanel(parent)
+    local panel = CreateFrame("Frame", nil, parent)
+    panel:SetAllPoints()
+    panel:Hide()
+    
+    local header = self:CreateSettingsHeader(panel, "Menu Bar Settings", -20)
+    
+    local db = self:GetDB()
+    
+    -- Initialize menuBar settings if missing
+    if not db.menuBar then
+        db.menuBar = {
+            enabled = true,
+            buttonOrder = {
+                "CharacterMicroButton",
+                "ProfessionMicroButton",
+                "PlayerSpellsMicroButton",
+                "AchievementMicroButton",
+                "QuestLogMicroButton",
+                "GuildMicroButton",
+                "LFDMicroButton",
+                "CollectionsMicroButton",
+                "EJMicroButton",
+                "HousingMicroButton",
+                "StoreMicroButton",
+                "MainMenuMicroButton",
+            },
+            hiddenButtons = {},
+        }
+    end
+    
+    -- Friendly names for buttons
+    local BUTTON_NAMES = {
+        CharacterMicroButton = "Character",
+        ProfessionMicroButton = "Professions",
+        PlayerSpellsMicroButton = "Spellbook",
+        SpellbookMicroButton = "Spellbook",
+        TalentMicroButton = "Talents",
+        AchievementMicroButton = "Achievements",
+        QuestLogMicroButton = "Quest Log",
+        GuildMicroButton = "Guild",
+        LFDMicroButton = "Group Finder",
+        CollectionsMicroButton = "Collections",
+        EJMicroButton = "Adventure Guide",
+        HelpMicroButton = "Help",
+        StoreMicroButton = "Shop",
+        MainMenuMicroButton = "Game Menu",
+        HousingMicroButton = "Housing",
+        SocialsMicroButton = "Social",
+        WorldMapMicroButton = "Map",
+        PVPMicroButton = "PvP",
+    }
+    
+    local info = self:CreateSubHeader(panel, "Drag buttons to reorder. Click eye icon to show/hide.")
+    info:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -10)
+    
+    -- Container for button list with scroll
+    local listFrame = CreateFrame("Frame", nil, panel, "BackdropTemplate")
+    listFrame:SetSize(420, 380)
+    listFrame:SetPoint("TOPLEFT", info, "BOTTOMLEFT", 0, -15)
+    listFrame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    listFrame:SetBackdropColor(unpack(COLORS.bgDark))
+    listFrame:SetBackdropBorderColor(unpack(COLORS.border))
+    
+    -- Create scroll frame inside listFrame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, listFrame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 5, -5)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 5)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 500)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    panel.buttonRows = {}
+    panel.listFrame = listFrame
+    panel.scrollChild = scrollChild
+    
+    -- Drag state
+    local dragRow = nil
+    local dragIndex = nil
+    
+    -- Function to update the menu bar in-game
+    local function ApplyChanges()
+        if E.RefreshMicroBar then
+            E:RefreshMicroBar()
+        end
+    end
+    
+    -- Function to swap buttons in the order
+    local function SwapButtons(fromIndex, toIndex)
+        if fromIndex == toIndex then return end
+        local order = db.menuBar.buttonOrder
+        local button = table.remove(order, fromIndex)
+        table.insert(order, toIndex, button)
+        self:RefreshMenuBarList(panel)
+        ApplyChanges()
+    end
+    
+    -- Function to toggle button visibility
+    local function ToggleButtonVisibility(buttonName)
+        db.menuBar.hiddenButtons = db.menuBar.hiddenButtons or {}
+        db.menuBar.hiddenButtons[buttonName] = not db.menuBar.hiddenButtons[buttonName]
+        self:RefreshMenuBarList(panel)
+        ApplyChanges()
+    end
+    
+    -- Build the list
+    function self:RefreshMenuBarList(p)
+        -- Clear existing rows
+        for _, row in ipairs(p.buttonRows) do
+            row:Hide()
+            row:SetParent(nil)
+        end
+        wipe(p.buttonRows)
+        
+        local order = db.menuBar.buttonOrder
+        local hidden = db.menuBar.hiddenButtons or {}
+        local parent = p.scrollChild or p.listFrame
+        
+        for i, buttonName in ipairs(order) do
+            local row = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+            row:SetSize(360, 32)
+            row:SetPoint("TOPLEFT", 5, -5 - ((i - 1) * 34))
+            row:SetBackdrop({
+                bgFile = "Interface\\Buttons\\WHITE8X8",
+                edgeFile = "Interface\\Buttons\\WHITE8X8",
+                edgeSize = 1,
+            })
+            row:SetBackdropColor(unpack(COLORS.bgLight))
+            row:SetBackdropBorderColor(unpack(COLORS.border))
+            row:EnableMouse(true)
+            row.buttonName = buttonName
+            row.index = i
+            
+            -- Drag handle indicator
+            local dragHandle = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            dragHandle:SetPoint("LEFT", 8, 0)
+            dragHandle:SetText("::")
+            dragHandle:SetTextColor(0.5, 0.5, 0.5)
+            
+            -- Button name
+            local name = row:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            name:SetPoint("LEFT", dragHandle, "RIGHT", 10, 0)
+            name:SetText(BUTTON_NAMES[buttonName] or buttonName:gsub("MicroButton", ""))
+            row.nameText = name
+            
+            local isHidden = hidden[buttonName]
+            if isHidden then
+                name:SetTextColor(0.4, 0.4, 0.4)
+            else
+                name:SetTextColor(unpack(COLORS.text))
+            end
+            
+            -- Visibility toggle button
+            local visBtn = CreateFrame("Button", nil, row)
+            visBtn:SetSize(24, 24)
+            visBtn:SetPoint("RIGHT", -8, 0)
+            visBtn.icon = visBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+            visBtn.icon:SetPoint("CENTER")
+            visBtn.icon:SetText(isHidden and "X" or "O")
+            visBtn.icon:SetTextColor(isHidden and 0.8 or 0.3, isHidden and 0.3 or 0.8, isHidden and 0.3 or 0.3)
+            
+            visBtn:SetScript("OnClick", function()
+                ToggleButtonVisibility(buttonName)
+            end)
+            visBtn:SetScript("OnEnter", function(s)
+                s.icon:SetTextColor(1, 1, 0)
+                GameTooltip:SetOwner(s, "ANCHOR_RIGHT")
+                GameTooltip:SetText(isHidden and "Click to show" or "Click to hide")
+                GameTooltip:Show()
+            end)
+            visBtn:SetScript("OnLeave", function(s)
+                local h = hidden[buttonName]
+                s.icon:SetTextColor(h and 0.8 or 0.3, h and 0.3 or 0.8, h and 0.3 or 0.3)
+                GameTooltip:Hide()
+            end)
+            
+            -- Drag functionality
+            row:RegisterForDrag("LeftButton")
+            row:SetScript("OnDragStart", function(self)
+                dragRow = self
+                dragIndex = self.index
+                self:SetBackdropColor(unpack(COLORS.accent))
+                self:SetFrameStrata("DIALOG")
+            end)
+            
+            row:SetScript("OnDragStop", function(self)
+                self:SetBackdropColor(unpack(COLORS.bgLight))
+                self:SetFrameStrata("HIGH")
+                
+                if dragRow and dragIndex then
+                    -- Find which row we're over
+                    local cursorY = select(2, GetCursorPosition())
+                    local scale = UIParent:GetEffectiveScale()
+                    cursorY = cursorY / scale
+                    
+                    local targetIndex = nil
+                    for _, r in ipairs(p.buttonRows) do
+                        local top = r:GetTop()
+                        local bottom = r:GetBottom()
+                        if cursorY >= bottom and cursorY <= top then
+                            targetIndex = r.index
+                            break
+                        end
+                    end
+                    
+                    if targetIndex and targetIndex ~= dragIndex then
+                        SwapButtons(dragIndex, targetIndex)
+                    end
+                end
+                
+                dragRow = nil
+                dragIndex = nil
+            end)
+            
+            row:SetScript("OnEnter", function(self)
+                if not dragRow then
+                    self:SetBackdropColor(unpack(COLORS.hover))
+                end
+            end)
+            row:SetScript("OnLeave", function(self)
+                if not dragRow then
+                    self:SetBackdropColor(unpack(COLORS.bgLight))
+                end
+            end)
+            
+            table.insert(p.buttonRows, row)
+        end
+    end
+    
+    -- Move Up/Down buttons for keyboard users
+    local moveUpBtn = self:CreateButton(panel, "Move Up", 100, function()
+        -- Find selected (hovered) row and move it up
+        E:Print("Drag buttons to reorder them")
+    end)
+    moveUpBtn:SetPoint("TOPLEFT", listFrame, "TOPRIGHT", 10, 0)
+    
+    local moveDownBtn = self:CreateButton(panel, "Move Down", 100, function()
+        E:Print("Drag buttons to reorder them")
+    end)
+    moveDownBtn:SetPoint("TOPLEFT", moveUpBtn, "BOTTOMLEFT", 0, -5)
+    
+    -- Reset to defaults button
+    local resetBtn = self:CreateButton(panel, "Reset Order", 100, function()
+        db.menuBar.buttonOrder = {
+            "CharacterMicroButton",
+            "ProfessionMicroButton",
+            "PlayerSpellsMicroButton",
+            "AchievementMicroButton",
+            "QuestLogMicroButton",
+            "GuildMicroButton",
+            "LFDMicroButton",
+            "CollectionsMicroButton",
+            "EJMicroButton",
+            "HousingMicroButton",
+            "StoreMicroButton",
+            "MainMenuMicroButton",
+        }
+        db.menuBar.hiddenButtons = {}
+        self:RefreshMenuBarList(panel)
+        ApplyChanges()
+        E:Print("Menu bar reset to defaults")
+    end)
+    resetBtn:SetPoint("TOPLEFT", moveDownBtn, "BOTTOMLEFT", 0, -20)
+    
+    panel:SetScript("OnShow", function()
+        -- Initialize settings if needed
+        if not db.menuBar then
+            db.menuBar = {
+                enabled = true,
+                buttonOrder = {
+                    "CharacterMicroButton",
+                    "ProfessionMicroButton",
+                    "PlayerSpellsMicroButton",
+                    "AchievementMicroButton",
+                    "QuestLogMicroButton",
+                    "GuildMicroButton",
+                    "LFDMicroButton",
+                    "CollectionsMicroButton",
+                    "EJMicroButton",
+                    "HousingMicroButton",
+                    "StoreMicroButton",
+                    "MainMenuMicroButton",
+                },
+                hiddenButtons = {},
+            }
+        end
+        self:RefreshMenuBarList(panel)
+    end)
+    
+    return panel
 end
 
 -- Unit Frames Panel
@@ -1187,7 +1477,24 @@ function E:CreateMinimapPanel(parent)
     panel:SetAllPoints()
     panel:Hide()
     
-    local header = self:CreateSettingsHeader(panel, "Minimap Settings", -20)
+    -- Create scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 0)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 600)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    -- Style the scroll bar
+    local scrollBar = scrollFrame.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -4, -20)
+        scrollBar:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, 20)
+    end
+    
+    local header = self:CreateSettingsHeader(scrollChild, "Minimap Settings", -20)
     
     local db = self:GetDB()
     if not db.minimap then
@@ -1198,14 +1505,16 @@ function E:CreateMinimapPanel(parent)
             scale = 1.0,
             style = true,
             coords = true,
+            rotate = false,
+            zoneText = "top",
         }
     end
     
     -- General settings
-    local generalLabel = self:CreateSubHeader(panel, "General")
+    local generalLabel = self:CreateSubHeader(scrollChild, "General")
     generalLabel:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -25)
     
-    local enableCheck = self:CreateCheckbox(panel, "Enable minimap customization",
+    local enableCheck = self:CreateCheckbox(scrollChild, "Enable minimap customization",
         function() return db.minimap and db.minimap.enabled end,
         function(val)
             if db.minimap then db.minimap.enabled = val end
@@ -1213,7 +1522,7 @@ function E:CreateMinimapPanel(parent)
         end)
     enableCheck:SetPoint("TOPLEFT", generalLabel, "BOTTOMLEFT", 0, -8)
     
-    local squareCheck = self:CreateCheckbox(panel, "Square minimap",
+    local squareCheck = self:CreateCheckbox(scrollChild, "Square minimap (instead of circular)",
         function() return db.minimap and db.minimap.square end,
         function(val)
             if db.minimap then db.minimap.square = val end
@@ -1221,15 +1530,23 @@ function E:CreateMinimapPanel(parent)
         end)
     squareCheck:SetPoint("TOPLEFT", enableCheck, "BOTTOMLEFT", 0, -8)
     
-    local movableCheck = self:CreateCheckbox(panel, "Allow moving minimap",
+    local rotateCheck = self:CreateCheckbox(scrollChild, "Lock north to player facing direction",
+        function() return db.minimap and db.minimap.rotate end,
+        function(val)
+            if db.minimap then db.minimap.rotate = val end
+            if E.ToggleMinimapRotation then E:ToggleMinimapRotation(val) end
+        end)
+    rotateCheck:SetPoint("TOPLEFT", squareCheck, "BOTTOMLEFT", 0, -8)
+    
+    local movableCheck = self:CreateCheckbox(scrollChild, "Allow moving minimap",
         function() return db.minimap and db.minimap.movable end,
         function(val)
             if db.minimap then db.minimap.movable = val end
             E:Print("Reload UI to apply movement changes")
         end)
-    movableCheck:SetPoint("TOPLEFT", squareCheck, "BOTTOMLEFT", 0, -8)
+    movableCheck:SetPoint("TOPLEFT", rotateCheck, "BOTTOMLEFT", 0, -8)
     
-    local styleCheck = self:CreateCheckbox(panel, "Apply dark theme",
+    local styleCheck = self:CreateCheckbox(scrollChild, "Apply dark theme",
         function() return db.minimap and db.minimap.style end,
         function(val)
             if db.minimap then db.minimap.style = val end
@@ -1243,7 +1560,7 @@ function E:CreateMinimapPanel(parent)
         end)
     styleCheck:SetPoint("TOPLEFT", movableCheck, "BOTTOMLEFT", 0, -8)
     
-    local coordsCheck = self:CreateCheckbox(panel, "Show coordinates on minimap",
+    local coordsCheck = self:CreateCheckbox(scrollChild, "Show coordinates on minimap",
         function() return db.minimap and db.minimap.coords end,
         function(val)
             if db.minimap then db.minimap.coords = val end
@@ -1251,7 +1568,7 @@ function E:CreateMinimapPanel(parent)
         end)
     coordsCheck:SetPoint("TOPLEFT", styleCheck, "BOTTOMLEFT", 0, -8)
     
-    local buttonCheck = self:CreateCheckbox(panel, "Show minimap button",
+    local buttonCheck = self:CreateCheckbox(scrollChild, "Show minimap button",
         function() return db.minimap and db.minimap.showButton ~= false end,
         function(val)
             if db.minimap then db.minimap.showButton = val end
@@ -1260,22 +1577,56 @@ function E:CreateMinimapPanel(parent)
     buttonCheck:SetPoint("TOPLEFT", coordsCheck, "BOTTOMLEFT", 0, -8)
     
     -- Scale
-    local scaleLabel = self:CreateSubHeader(panel, "Scale")
+    local scaleLabel = self:CreateSubHeader(scrollChild, "Scale")
     scaleLabel:SetPoint("TOPLEFT", buttonCheck, "BOTTOMLEFT", 0, -25)
     
-    local scaleSlider = self:CreateSlider(panel, "Minimap Scale",
+    local scaleSlider = self:CreateSlider(scrollChild, "Minimap Scale",
         function() return db.minimap and db.minimap.scale or 1.0 end,
         function(val)
             if db.minimap then db.minimap.scale = val end
-            if E.UpdateMinimapScale then E:UpdateMinimapScale(val) end
+            if Minimap then Minimap:SetScale(val) end
         end, 0.5, 2.0, 0.1)
     scaleSlider:SetPoint("TOPLEFT", scaleLabel, "BOTTOMLEFT", 0, -10)
     
-    -- Info
-    local infoLabel = self:CreateSubHeader(panel, "Controls")
-    infoLabel:SetPoint("TOPLEFT", scaleSlider, "BOTTOMLEFT", 0, -40)
+    -- Header Bar
+    local zoneLabel = self:CreateSubHeader(scrollChild, "Header Bar")
+    zoneLabel:SetPoint("TOPLEFT", scaleSlider, "BOTTOMLEFT", 0, -40)
     
-    local infoText = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local zoneTop = self:CreateCheckbox(scrollChild, "Top (default)",
+        function() return db.minimap and (db.minimap.zoneText == "top" or db.minimap.zoneText == nil) end,
+        function(val)
+            if val and db.minimap then
+                db.minimap.zoneText = "top"
+                if E.UpdateZoneTextPosition then E:UpdateZoneTextPosition() end
+            end
+        end)
+    zoneTop:SetPoint("TOPLEFT", zoneLabel, "BOTTOMLEFT", 0, -8)
+    
+    local zoneBottom = self:CreateCheckbox(scrollChild, "Bottom",
+        function() return db.minimap and db.minimap.zoneText == "bottom" end,
+        function(val)
+            if val and db.minimap then
+                db.minimap.zoneText = "bottom"
+                if E.UpdateZoneTextPosition then E:UpdateZoneTextPosition() end
+            end
+        end)
+    zoneBottom:SetPoint("LEFT", zoneTop, "RIGHT", 120, 0)
+    
+    local zoneHide = self:CreateCheckbox(scrollChild, "Hidden",
+        function() return db.minimap and db.minimap.zoneText == "hide" end,
+        function(val)
+            if val and db.minimap then
+                db.minimap.zoneText = "hide"
+                if E.UpdateZoneTextPosition then E:UpdateZoneTextPosition() end
+            end
+        end)
+    zoneHide:SetPoint("LEFT", zoneBottom, "RIGHT", 80, 0)
+    
+    -- Info
+    local infoLabel = self:CreateSubHeader(scrollChild, "Controls")
+    infoLabel:SetPoint("TOPLEFT", zoneTop, "BOTTOMLEFT", 0, -25)
+    
+    local infoText = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     infoText:SetPoint("TOPLEFT", infoLabel, "BOTTOMLEFT", 0, -8)
     infoText:SetText("• Scroll wheel to zoom\n• Right-click for tracking menu\n• Shift+drag minimap button to move it\n• Enable 'Toggle Movers' in General to move minimap")
     infoText:SetTextColor(0.6, 0.6, 0.6)
@@ -1673,4 +2024,420 @@ function E:ShowImportDialog()
     
     local cancelBtn = self:CreateButton(dialog, "Cancel", 80, function() dialog:Hide() end)
     cancelBtn:SetPoint("BOTTOMRIGHT", -100, 12)
+end
+
+-- UI Panels Panel
+function E:CreatePanelsPanel(parent)
+    local panel = CreateFrame("Frame", nil, parent)
+    panel:SetAllPoints()
+    panel:Hide()
+    
+    -- Create scroll frame for content
+    local scrollFrame = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 16, -16)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -32, 16)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 800)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    -- Style scrollbar
+    local scrollBar = scrollFrame.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", 4, -16)
+        scrollBar:SetPoint("BOTTOMLEFT", scrollFrame, "BOTTOMRIGHT", 4, 16)
+    end
+    
+    local yOffset = 0
+    
+    -- Title
+    local title = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", 0, yOffset)
+    title:SetText("Custom UI Panels")
+    title:SetTextColor(0.6, 0.5, 0.9)
+    yOffset = yOffset - 30
+    
+    local desc = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    desc:SetPoint("TOPLEFT", 0, yOffset)
+    desc:SetText("Create custom panels to build your UI layout. Use as backdrops behind action bars or decorative elements.")
+    desc:SetTextColor(0.7, 0.7, 0.7)
+    desc:SetWidth(500)
+    desc:SetJustifyH("LEFT")
+    yOffset = yOffset - 40
+    
+    -- Add Panel Button
+    local addBtn = self:CreateButton(scrollChild, "+ Add Panel", 120, function()
+        local newId = E:AddNewPanel()
+        E:Print("Created new panel. Drag to position, resize from corner.")
+        -- Refresh the panel list
+        E:RefreshPanelsList(scrollChild)
+    end)
+    addBtn:SetPoint("TOPLEFT", 0, yOffset)
+    
+    -- Toggle Edit Mode Button
+    local editBtn = self:CreateButton(scrollChild, "Toggle Edit Mode", 140, function()
+        E:TogglePanelEditMode()
+    end)
+    editBtn:SetPoint("LEFT", addBtn, "RIGHT", 10, 0)
+    
+    yOffset = yOffset - 50
+    
+    -- Panel list container
+    local listContainer = CreateFrame("Frame", nil, scrollChild)
+    listContainer:SetPoint("TOPLEFT", 0, yOffset)
+    listContainer:SetSize(500, 400)
+    scrollChild.panelListContainer = listContainer
+    
+    -- Store reference for refreshing
+    panel.scrollChild = scrollChild
+    panel.listContainer = listContainer
+    
+    -- Refresh list when panel is shown
+    panel:SetScript("OnShow", function()
+        E:RefreshPanelsList(scrollChild)
+    end)
+    
+    return panel
+end
+
+-- Refresh panels list UI
+function E:RefreshPanelsList(scrollChild)
+    local container = scrollChild.panelListContainer
+    if not container then return end
+    
+    -- Clear existing entries
+    for _, child in pairs({container:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+    end
+    
+    local db = self:GetDB()
+    if not db.panels or not db.panels.list then return end
+    
+    local yOffset = 0
+    
+    for id, panelData in pairs(db.panels.list) do
+        local entry = self:CreatePanelListEntry(container, id, panelData, yOffset)
+        yOffset = yOffset - 150 -- Entry height + spacing
+    end
+    
+    -- Update container height
+    container:SetHeight(math.abs(yOffset) + 50)
+end
+
+-- Create a panel list entry
+function E:CreatePanelListEntry(parent, panelId, panelData, yOffset)
+    local entry = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+    entry:SetSize(520, 140)
+    entry:SetPoint("TOPLEFT", 0, yOffset)
+    entry:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    entry:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+    entry:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    
+    -- Panel name (editable)
+    local nameLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    nameLabel:SetPoint("TOPLEFT", 10, -8)
+    nameLabel:SetText(panelData.name or panelId)
+    nameLabel:SetTextColor(0.9, 0.7, 1)
+    
+    -- Size info
+    local sizeLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    sizeLabel:SetPoint("LEFT", nameLabel, "RIGHT", 10, 0)
+    sizeLabel:SetText(string.format("(%dx%d)", panelData.width or 200, panelData.height or 100))
+    sizeLabel:SetTextColor(0.5, 0.5, 0.5)
+    entry.sizeLabel = sizeLabel
+    
+    -- Delete button
+    local deleteBtn = CreateFrame("Button", nil, entry, "BackdropTemplate")
+    deleteBtn:SetSize(50, 22)
+    deleteBtn:SetPoint("TOPRIGHT", -10, -8)
+    deleteBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    deleteBtn:SetBackdropColor(0.5, 0.1, 0.1, 0.8)
+    deleteBtn:SetBackdropBorderColor(0.7, 0.2, 0.2, 1)
+    deleteBtn.text = deleteBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    deleteBtn.text:SetPoint("CENTER")
+    deleteBtn.text:SetText("Delete")
+    deleteBtn:SetScript("OnClick", function()
+        E:DeleteCustomPanel(panelId)
+        E:RefreshPanelsList(parent:GetParent())
+    end)
+    deleteBtn:SetScript("OnEnter", function(self) self:SetBackdropColor(0.7, 0.2, 0.2, 1) end)
+    deleteBtn:SetScript("OnLeave", function(self) self:SetBackdropColor(0.5, 0.1, 0.1, 0.8) end)
+    
+    -- Duplicate button
+    local dupBtn = CreateFrame("Button", nil, entry, "BackdropTemplate")
+    dupBtn:SetSize(60, 22)
+    dupBtn:SetPoint("RIGHT", deleteBtn, "LEFT", -5, 0)
+    dupBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    dupBtn:SetBackdropColor(0.2, 0.2, 0.3, 0.8)
+    dupBtn:SetBackdropBorderColor(0.4, 0.4, 0.5, 1)
+    dupBtn.text = dupBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    dupBtn.text:SetPoint("CENTER")
+    dupBtn.text:SetText("Duplicate")
+    dupBtn:SetScript("OnClick", function()
+        E:DuplicatePanel(panelId)
+        E:RefreshPanelsList(parent:GetParent())
+    end)
+    dupBtn:SetScript("OnEnter", function(self) self:SetBackdropColor(0.3, 0.3, 0.5, 1) end)
+    dupBtn:SetScript("OnLeave", function(self) self:SetBackdropColor(0.2, 0.2, 0.3, 0.8) end)
+    
+    -- Visible checkbox
+    local visCheck = CreateFrame("CheckButton", nil, entry)
+    visCheck:SetSize(18, 18)
+    visCheck:SetPoint("TOPLEFT", 10, -35)
+    visCheck.bg = visCheck:CreateTexture(nil, "BACKGROUND")
+    visCheck.bg:SetAllPoints()
+    visCheck.bg:SetColorTexture(0.15, 0.15, 0.15, 1)
+    visCheck.checkmark = visCheck:CreateTexture(nil, "OVERLAY")
+    visCheck.checkmark:SetSize(12, 12)
+    visCheck.checkmark:SetPoint("CENTER")
+    visCheck.checkmark:SetColorTexture(0.6, 0.4, 0.9, 1)
+    visCheck:SetChecked(panelData.visible ~= false)
+    if panelData.visible ~= false then visCheck.checkmark:Show() else visCheck.checkmark:Hide() end
+    visCheck:SetScript("OnClick", function(self)
+        panelData.visible = self:GetChecked()
+        if self:GetChecked() then
+            visCheck.checkmark:Show()
+            local panel = E.CustomPanels[panelId]
+            if panel then panel:Show() end
+        else
+            visCheck.checkmark:Hide()
+            local panel = E.CustomPanels[panelId]
+            if panel then panel:Hide() end
+        end
+    end)
+    local visLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    visLabel:SetPoint("LEFT", visCheck, "RIGHT", 5, 0)
+    visLabel:SetText("Visible")
+    visLabel:SetTextColor(0.8, 0.8, 0.8)
+    
+    -- Width input
+    local widthLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    widthLabel:SetPoint("LEFT", visLabel, "RIGHT", 20, 0)
+    widthLabel:SetText("W:")
+    widthLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local widthBox = CreateFrame("EditBox", nil, entry, "BackdropTemplate")
+    widthBox:SetSize(50, 20)
+    widthBox:SetPoint("LEFT", widthLabel, "RIGHT", 5, 0)
+    widthBox:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    widthBox:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    widthBox:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    widthBox:SetFont("Fonts\\FRIZQT__.TTF", 11, "")
+    widthBox:SetTextColor(1, 1, 1)
+    widthBox:SetJustifyH("CENTER")
+    widthBox:SetAutoFocus(false)
+    widthBox:SetText(tostring(panelData.width or 200))
+    widthBox:SetScript("OnEnterPressed", function(self)
+        local val = tonumber(self:GetText()) or 200
+        val = math.max(10, math.min(3000, val))
+        panelData.width = val
+        self:SetText(tostring(val))
+        local panel = E.CustomPanels[panelId]
+        if panel then panel:SetWidth(val); panel.panelData.width = val end
+        sizeLabel:SetText(string.format("(%dx%d)", val, panelData.height or 100))
+        self:ClearFocus()
+    end)
+    widthBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    
+    -- Height input
+    local heightLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    heightLabel:SetPoint("LEFT", widthBox, "RIGHT", 15, 0)
+    heightLabel:SetText("H:")
+    heightLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local heightBox = CreateFrame("EditBox", nil, entry, "BackdropTemplate")
+    heightBox:SetSize(50, 20)
+    heightBox:SetPoint("LEFT", heightLabel, "RIGHT", 5, 0)
+    heightBox:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    heightBox:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    heightBox:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    heightBox:SetFont("Fonts\\FRIZQT__.TTF", 11, "")
+    heightBox:SetTextColor(1, 1, 1)
+    heightBox:SetJustifyH("CENTER")
+    heightBox:SetAutoFocus(false)
+    heightBox:SetText(tostring(panelData.height or 100))
+    heightBox:SetScript("OnEnterPressed", function(self)
+        local val = tonumber(self:GetText()) or 100
+        val = math.max(10, math.min(2000, val))
+        panelData.height = val
+        self:SetText(tostring(val))
+        local panel = E.CustomPanels[panelId]
+        if panel then panel:SetHeight(val); panel.panelData.height = val end
+        sizeLabel:SetText(string.format("(%dx%d)", panelData.width or 200, val))
+        self:ClearFocus()
+    end)
+    heightBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    
+    -- Row 2: Colors
+    local bgLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    bgLabel:SetPoint("TOPLEFT", 10, -65)
+    bgLabel:SetText("Background:")
+    bgLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local bgColor = panelData.bgColor or { r = 0.1, g = 0.1, b = 0.1, a = 0.8 }
+    local bgColorBtn = CreateFrame("Button", nil, entry, "BackdropTemplate")
+    bgColorBtn:SetSize(30, 20)
+    bgColorBtn:SetPoint("LEFT", bgLabel, "RIGHT", 5, 0)
+    bgColorBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    bgColorBtn:SetBackdropColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a)
+    bgColorBtn:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+    bgColorBtn:SetScript("OnClick", function()
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = bgColor.r, g = bgColor.g, b = bgColor.b, opacity = bgColor.a, hasOpacity = true,
+            swatchFunc = function()
+                local r, g, b = ColorPickerFrame:GetColorRGB()
+                local a = ColorPickerFrame:GetColorAlpha()
+                bgColor.r, bgColor.g, bgColor.b, bgColor.a = r, g, b, a
+                panelData.bgColor = bgColor
+                bgColorBtn:SetBackdropColor(r, g, b, a)
+                local panel = E.CustomPanels[panelId]
+                if panel then panel:SetBackdropColor(r, g, b, a) end
+            end,
+            cancelFunc = function() end,
+        })
+    end)
+    bgColorBtn:SetScript("OnEnter", function(self) self:SetBackdropBorderColor(0.8, 0.8, 0.8, 1) end)
+    bgColorBtn:SetScript("OnLeave", function(self) self:SetBackdropBorderColor(0.5, 0.5, 0.5, 1) end)
+    
+    -- Border color
+    local borderLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    borderLabel:SetPoint("LEFT", bgColorBtn, "RIGHT", 20, 0)
+    borderLabel:SetText("Border:")
+    borderLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local borderColor = panelData.borderColor or { r = 0.3, g = 0.3, b = 0.3, a = 1 }
+    local borderColorBtn = CreateFrame("Button", nil, entry, "BackdropTemplate")
+    borderColorBtn:SetSize(30, 20)
+    borderColorBtn:SetPoint("LEFT", borderLabel, "RIGHT", 5, 0)
+    borderColorBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    borderColorBtn:SetBackdropColor(borderColor.r, borderColor.g, borderColor.b, borderColor.a)
+    borderColorBtn:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+    borderColorBtn:SetScript("OnClick", function()
+        ColorPickerFrame:SetupColorPickerAndShow({
+            r = borderColor.r, g = borderColor.g, b = borderColor.b, opacity = borderColor.a, hasOpacity = true,
+            swatchFunc = function()
+                local r, g, b = ColorPickerFrame:GetColorRGB()
+                local a = ColorPickerFrame:GetColorAlpha()
+                borderColor.r, borderColor.g, borderColor.b, borderColor.a = r, g, b, a
+                panelData.borderColor = borderColor
+                borderColorBtn:SetBackdropColor(r, g, b, a)
+                local panel = E.CustomPanels[panelId]
+                if panel then panel:SetBackdropBorderColor(r, g, b, a) end
+            end,
+            cancelFunc = function() end,
+        })
+    end)
+    borderColorBtn:SetScript("OnEnter", function(self) self:SetBackdropBorderColor(0.8, 0.8, 0.8, 1) end)
+    borderColorBtn:SetScript("OnLeave", function(self) self:SetBackdropBorderColor(0.5, 0.5, 0.5, 1) end)
+    
+    -- Border size
+    local bsLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    bsLabel:SetPoint("LEFT", borderColorBtn, "RIGHT", 20, 0)
+    bsLabel:SetText("Border Size:")
+    bsLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local bsBox = CreateFrame("EditBox", nil, entry, "BackdropTemplate")
+    bsBox:SetSize(30, 20)
+    bsBox:SetPoint("LEFT", bsLabel, "RIGHT", 5, 0)
+    bsBox:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    bsBox:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    bsBox:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    bsBox:SetFont("Fonts\\FRIZQT__.TTF", 11, "")
+    bsBox:SetTextColor(1, 1, 1)
+    bsBox:SetJustifyH("CENTER")
+    bsBox:SetAutoFocus(false)
+    bsBox:SetText(tostring(panelData.borderSize or 2))
+    bsBox:SetScript("OnEnterPressed", function(self)
+        local val = tonumber(self:GetText()) or 2
+        val = math.max(0, math.min(20, val))
+        panelData.borderSize = val
+        self:SetText(tostring(val))
+        E:UpdatePanelStyle(panelId)
+        self:ClearFocus()
+    end)
+    bsBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    
+    -- Row 3: Strata/Level
+    local strataLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    strataLabel:SetPoint("TOPLEFT", 10, -95)
+    strataLabel:SetText("Strata:")
+    strataLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local stratas = {"BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG"}
+    local currentStrata = panelData.strata or "BACKGROUND"
+    local strataBtn = CreateFrame("Button", nil, entry, "BackdropTemplate")
+    strataBtn:SetSize(90, 20)
+    strataBtn:SetPoint("LEFT", strataLabel, "RIGHT", 5, 0)
+    strataBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    strataBtn:SetBackdropColor(0.15, 0.15, 0.15, 1)
+    strataBtn:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    strataBtn.text = strataBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    strataBtn.text:SetPoint("CENTER")
+    strataBtn.text:SetText(currentStrata)
+    strataBtn:SetScript("OnClick", function()
+        local idx = 1
+        for i, s in ipairs(stratas) do
+            if s == currentStrata then idx = i; break end
+        end
+        idx = idx + 1
+        if idx > #stratas then idx = 1 end
+        currentStrata = stratas[idx]
+        panelData.strata = currentStrata
+        strataBtn.text:SetText(currentStrata)
+        local panel = E.CustomPanels[panelId]
+        if panel then panel:SetFrameStrata(currentStrata) end
+    end)
+    
+    -- Frame Level
+    local levelLabel = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    levelLabel:SetPoint("LEFT", strataBtn, "RIGHT", 20, 0)
+    levelLabel:SetText("Level:")
+    levelLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    local levelBox = CreateFrame("EditBox", nil, entry, "BackdropTemplate")
+    levelBox:SetSize(40, 20)
+    levelBox:SetPoint("LEFT", levelLabel, "RIGHT", 5, 0)
+    levelBox:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    levelBox:SetBackdropColor(0.1, 0.1, 0.1, 1)
+    levelBox:SetBackdropBorderColor(0.3, 0.3, 0.3, 1)
+    levelBox:SetFont("Fonts\\FRIZQT__.TTF", 11, "")
+    levelBox:SetTextColor(1, 1, 1)
+    levelBox:SetJustifyH("CENTER")
+    levelBox:SetAutoFocus(false)
+    levelBox:SetText(tostring(panelData.level or 1))
+    levelBox:SetScript("OnEnterPressed", function(self)
+        local val = tonumber(self:GetText()) or 1
+        val = math.max(0, math.min(100, val))
+        panelData.level = val
+        self:SetText(tostring(val))
+        local panel = E.CustomPanels[panelId]
+        if panel then panel:SetFrameLevel(val) end
+        self:ClearFocus()
+    end)
+    levelBox:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    
+    -- Edit button (to enable move/resize)
+    local editBtn = CreateFrame("Button", nil, entry, "BackdropTemplate")
+    editBtn:SetSize(70, 20)
+    editBtn:SetPoint("BOTTOMRIGHT", -10, 10)
+    editBtn:SetBackdrop({ bgFile = "Interface\\Buttons\\WHITE8X8", edgeFile = "Interface\\Buttons\\WHITE8X8", edgeSize = 1 })
+    editBtn:SetBackdropColor(0.2, 0.4, 0.2, 0.8)
+    editBtn:SetBackdropBorderColor(0.3, 0.6, 0.3, 1)
+    editBtn.text = editBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    editBtn.text:SetPoint("CENTER")
+    editBtn.text:SetText("Edit Panel")
+    editBtn:SetScript("OnClick", function()
+        E:EnablePanelEditMode(panelId)
+        E:Print("Editing " .. (panelData.name or panelId) .. " - Drag to move, corner to resize")
+    end)
+    editBtn:SetScript("OnEnter", function(self) self:SetBackdropColor(0.3, 0.6, 0.3, 1) end)
+    editBtn:SetScript("OnLeave", function(self) self:SetBackdropColor(0.2, 0.4, 0.2, 0.8) end)
+    
+    return entry
 end

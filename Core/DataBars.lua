@@ -419,7 +419,8 @@ function E:CreateDataBar(position)
     })
     bar:SetBackdropColor(0.05, 0.05, 0.05, barDB.alpha or 0.9)
     bar:SetBackdropBorderColor(0.1, 0.1, 0.1, 1)
-    bar:SetFrameStrata("HIGH")
+    bar:SetFrameStrata("BACKGROUND")
+    bar:SetFrameLevel(0)
     
     bar.elements = {}
     bar.position = position
