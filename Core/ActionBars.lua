@@ -1198,6 +1198,48 @@ function E:ApplyUIScale()
             mover:SetScale(scale)
         end
     end
+    
+    -- Apply to data bars
+    if self.DataBars then
+        if self.DataBars.top then
+            self.DataBars.top:SetScale(scale)
+        end
+        if self.DataBars.bottom then
+            self.DataBars.bottom:SetScale(scale)
+        end
+    end
+    
+    -- Apply to custom UI panels
+    if self.CustomPanels then
+        for _, panel in pairs(self.CustomPanels) do
+            if panel then
+                panel:SetScale(scale)
+            end
+        end
+    end
+    
+    -- Apply to minimap frame if we have one
+    if self.MinimapFrame then
+        self.MinimapFrame:SetScale(scale)
+    end
+    
+    -- Apply to unit frames
+    if self.UnitFrames then
+        for _, frame in pairs(self.UnitFrames) do
+            if frame then
+                frame:SetScale(scale)
+            end
+        end
+    end
+    
+    -- Apply to chat frames we've styled
+    if self.StyledChatFrames then
+        for _, frame in pairs(self.StyledChatFrames) do
+            if frame then
+                frame:SetScale(scale)
+            end
+        end
+    end
 end
 
 -- Apply action bar fonts
