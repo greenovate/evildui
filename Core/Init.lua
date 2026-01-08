@@ -28,6 +28,7 @@ E.EventFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
 
 -- Combat state
 E.InCombat = false
+E.NeedsReload = false
 
 -- Queued functions for after combat
 E.CombatQueue = {}
@@ -111,7 +112,14 @@ function E:OnLogin()
     -- Register slash commands
     self:RegisterSlashCommands()
     
-    self:Print("Loaded. Type /edui for options.")
+    -- Show welcome splash on first install
+    if not evilduidb.welcomed then
+        C_Timer.After(2, function()
+            self:ShowWelcomeSplash()
+        end)
+    else
+        self:Print("Loaded. Type /edui for options.")
+    end
 end
 
 -- Entering world handler
@@ -252,4 +260,115 @@ function E:DisableMoverMode()
     if self.MoverMode then
         self:ToggleMoverMode(false)
     end
+end
+
+-- Reload prompt
+function E:ShowReloadPrompt()
+    if self.ReloadDialog then
+        self.ReloadDialog:Show()
+        return
+    end
+    
+    local frame = CreateFrame("Frame", "EvilDUI_ReloadDialog", UIParent, "BackdropTemplate")
+    frame:SetSize(320, 120)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("DIALOG")
+    frame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 2,
+    })
+    frame:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
+    frame:SetBackdropBorderColor(0.6, 0.4, 0, 1)
+    frame:EnableMouse(true)
+    frame:SetMovable(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", 0, -15)
+    title:SetText("|cff9900ffevildUI|r")
+    
+    local text = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    text:SetPoint("TOP", title, "BOTTOM", 0, -10)
+    text:SetText("A reload is required to apply changes.")
+    
+    local reloadBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    reloadBtn:SetSize(100, 26)
+    reloadBtn:SetPoint("BOTTOMLEFT", 30, 15)
+    reloadBtn:SetText("Reload Now")
+    reloadBtn:SetScript("OnClick", function()
+        ReloadUI()
+    end)
+    
+    local laterBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    laterBtn:SetSize(100, 26)
+    laterBtn:SetPoint("BOTTOMRIGHT", -30, 15)
+    laterBtn:SetText("Later")
+    laterBtn:SetScript("OnClick", function()
+        frame:Hide()
+    end)
+    
+    self.ReloadDialog = frame
+    tinsert(UISpecialFrames, "EvilDUI_ReloadDialog")
+end
+
+-- Mark that a reload is needed and show prompt
+function E:RequestReload()
+    self.NeedsReload = true
+    self:ShowReloadPrompt()
+end
+
+-- Welcome splash screen
+function E:ShowWelcomeSplash()
+    if self.WelcomeSplash then return end
+    
+    local frame = CreateFrame("Frame", "EvilDUI_WelcomeSplash", UIParent, "BackdropTemplate")
+    frame:SetSize(400, 300)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("DIALOG")
+    frame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 2,
+    })
+    frame:SetBackdropColor(0.08, 0.08, 0.08, 0.98)
+    frame:SetBackdropBorderColor(0.6, 0.4, 0, 1)
+    frame:EnableMouse(true)
+    
+    -- Logo
+    local logo = frame:CreateTexture(nil, "ARTWORK")
+    logo:SetSize(128, 128)
+    logo:SetPoint("TOP", 0, -20)
+    logo:SetTexture("Interface\\AddOns\\evildui\\evildUI")
+    
+    -- Title
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", logo, "BOTTOM", 0, -10)
+    title:SetText("|cff9900ffevild|r|cffffffffUI|r v" .. self.Version)
+    
+    -- Welcome text
+    local text = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    text:SetPoint("TOP", title, "BOTTOM", 0, -15)
+    text:SetWidth(360)
+    text:SetText("Welcome! Type |cff9900ff/evildui|r to open settings.\n\nUse |cff9900ff/edui move|r to reposition frames\nand |cff9900ff/edui kb|r for mouseover keybinds.")
+    
+    -- Author
+    local author = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    author:SetPoint("BOTTOM", 0, 40)
+    author:SetText("|cff888888Created by evild @ Mal'Ganis|r")
+    
+    -- Close button
+    local closeBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    closeBtn:SetSize(120, 28)
+    closeBtn:SetPoint("BOTTOM", 0, 10)
+    closeBtn:SetText("Get Started")
+    closeBtn:SetScript("OnClick", function()
+        frame:Hide()
+        evilduidb.welcomed = true
+    end)
+    
+    self.WelcomeSplash = frame
+    tinsert(UISpecialFrames, "EvilDUI_WelcomeSplash")
 end
