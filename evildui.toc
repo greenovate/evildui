@@ -12,6 +12,7 @@
 ## X-License: MIT
 ## X-Category: Action Bars
 ## X-Localizations: enUS
+## X-Curse-Project-ID: 1423379
 
 # Localization
 Locales\Locales.lua
