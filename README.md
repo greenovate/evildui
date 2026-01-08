@@ -110,26 +110,17 @@ A: WoW's secure frame system prevents modifications during combat to prevent exp
 **Q: How do I share my profile?**
 A: Go to Profiles > Export Profile, copy the text string, and share it. Others can import using Profiles > Import Profile.
 
-## Support
+## Support & Bug Reports
 
-- [Report Issues](https://github.com/evilD-WoW/evildui/issues)
+Found a bug or have a feature request?
 
-## Contributing
-
-Contributions are welcome! Please:
-1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+- 🐛 [Report a Bug](https://github.com/greenovate/evildui/issues/new?labels=bug&template=bug_report.md)
+- 💡 [Request a Feature](https://github.com/greenovate/evildui/issues/new?labels=enhancement&template=feature_request.md)
+- 📋 [View All Issues](https://github.com/greenovate/evildui/issues)
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- Blizzard Entertainment for World of Warcraft
-- The WoW addon development community
-- All contributors and testers
 
 ---
 
