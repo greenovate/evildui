@@ -413,23 +413,24 @@ function E:ShowWelcomeSplash()
     
     -- Changelog content
     local changelog = [[
-|cff00ff00New Features:|r
-• Custom UI Panels - Create resizable backdrop panels for your layout
-• Minimap settings - Square/round shape, rotation lock, scale, coordinates
-• Welcome screen with changelog (you're looking at it!)
-• Reload prompt when settings require it
+|cff00ff00New in v0.0.3:|r
+• Layout Manager - Save, share, and import complete UI layouts!
+• Layout history with auto-save before loading
+• Export/import layouts as shareable text strings
+• Favorite layouts for quick access
+• Welcome screen with changelog on updates
 
 |cff00ff00Tips:|r
 • Type |cff9900ff/evildui|r or |cff9900ff/edui|r to open settings
 • Use |cff9900ff/edui move|r to drag and reposition any UI element
-• Use |cff9900ff/edui kb|r for mouseover keybind mode - hover a button and press a key
-• Create custom panels in Settings > UI Panels for backdrop decorations
-• Profiles can be exported and shared with other players
+• Use |cff9900ff/edui kb|r for mouseover keybind mode
+• Save your layout in Settings > Layouts to share or backup
+• Create custom panels in Settings > UI Panels for backdrops
 
-|cff00ff00Bug Fixes:|r
-• Action bar icons now display at proper brightness
-• Keybind text properly abbreviated (MwU, MwD, etc.)
-• Micro button positioning fixed
+|cff00ff00Previous Updates:|r
+• Custom UI Panels system
+• Minimap settings (shape, rotation, scale, coords)
+• Action bar improvements
 
 |cff00ff00Full Changelog:|r
 github.com/greenovate/evildui/blob/main/CHANGELOG.md

@@ -2,7 +2,7 @@
 ## Title: |cff9900ffevild|r|cffffffffUI|r
 ## Notes: Clean questing and PVP interface addon with movers, mouseover keybinds, and profiles
 ## Author: evild @ Mal'Ganis
-## Version: 0.0.2
+## Version: 0.0.3
 ## SavedVariables: evilduidb
 ## SavedVariablesPerCharacter: evilduichardb
 ## IconTexture: Interface\AddOns\evildui\evildUI

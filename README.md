@@ -42,9 +42,9 @@ A clean, lightweight UI addon for World of Warcraft focused on questing and PVP.
 
 ## 📥 Download
 
-### [⬇️ Download Latest Release (v0.0.2)](https://github.com/greenovate/evildui/releases/latest)
+### [⬇️ Download Latest Release (v0.0.3)](https://github.com/greenovate/evildui/releases/latest)
 
-Click the link above, then download `evildui-v0.0.2.zip` from the Assets section.
+Click the link above, then download `evildui-v0.0.3.zip` from the Assets section.
 
 ## Installation
 
