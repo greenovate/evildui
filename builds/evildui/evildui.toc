@@ -1,0 +1,32 @@
+## Interface: 110207
+## Title: |cff9900ffevild|r|cffffffffUI|r
+## Notes: Clean questing and PVP interface addon with movers, mouseover keybinds, and profiles
+## Author: evild @ Mal'Ganis
+## Version: 0.0.2
+## SavedVariables: evilduidb
+## SavedVariablesPerCharacter: evilduichardb
+## IconTexture: Interface\AddOns\evildui\evildUI
+## Category: Action Bars
+
+## X-Website: https://github.com/greenovate/evildui
+## X-License: MIT
+## X-Category: Action Bars
+## X-Localizations: enUS
+
+# Localization
+Locales\Locales.lua
+Locales\enUS.lua
+
+# Core
+Core\Init.lua
+Core\Database.lua
+Core\Movers.lua
+Core\ActionBars.lua
+Core\UnitFrames.lua
+Core\Chat.lua
+Core\DataBars.lua
+Core\Minimap.lua
+Core\Panels.lua
+Core\Keybinds.lua
+Core\Profiles.lua
+Core\Config.lua
