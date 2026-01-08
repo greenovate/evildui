@@ -28,5 +28,6 @@ Core\DataBars.lua
 Core\Minimap.lua
 Core\Panels.lua
 Core\Keybinds.lua
+Core\Layouts.lua
 Core\Profiles.lua
 Core\Config.lua
