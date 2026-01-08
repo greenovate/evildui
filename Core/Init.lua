@@ -109,12 +109,8 @@ function E:OnLogin()
     self:InitializeMinimap()
     self:InitializePanels()
     
-    -- Apply global UI scale after all modules are initialized
-    C_Timer.After(0.1, function()
-        if self.ApplyUIScale then
-            self:ApplyUIScale()
-        end
-    end)
+    -- NOTE: Global UI scale disabled - causes position issues
+    -- TODO: Implement container-based scaling in future version
     
     -- Register slash commands
     self:RegisterSlashCommands()

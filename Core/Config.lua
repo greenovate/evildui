@@ -562,6 +562,9 @@ function E:CreateGeneralPanel(parent)
     
     local db = self:GetDB()
     
+    -- NOTE: Global scale disabled - causes position issues with saved layouts
+    -- TODO: Implement proper container-based scaling in future version
+    --[[
     local scaleSlider = self:CreateSlider(panel, "Global Scale",
         function() return db.general.uiScale end,
         function(val)
@@ -570,6 +573,7 @@ function E:CreateGeneralPanel(parent)
         end,
         0.5, 2.0, 0.1)
     scaleSlider:SetPoint("TOPLEFT", uiLabel, "BOTTOMLEFT", 0, -10)
+    ]]--
     
     local fadeCheck = self:CreateCheckbox(panel, "Fade action bars out of combat",
         function() return db.general.fadeOutOfCombat end,
@@ -578,7 +582,7 @@ function E:CreateGeneralPanel(parent)
             -- This setting is checked during combat events, no immediate action needed
             E:Print("Fade setting saved. Effect applies when entering/leaving combat.")
         end)
-    fadeCheck:SetPoint("TOPLEFT", scaleSlider, "BOTTOMLEFT", 0, -15)
+    fadeCheck:SetPoint("TOPLEFT", uiLabel, "BOTTOMLEFT", 0, -10)
     
     local keybindTextCheck = self:CreateCheckbox(panel, "Show keybind text on buttons",
         function() return db.general.showKeybindText end,
