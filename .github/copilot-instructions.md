@@ -37,7 +37,7 @@ PVPUI/
 ├── Locales/
 │   ├── Locales.lua       # Localization setup
 │   └── enUS.lua          # English strings
-├── PVPUI.toc             # Addon manifest (rename to evildui.toc when packaging)
+├── evildui.toc           # Addon manifest
 ├── README.md
 ├── CHANGELOG.md
 └── LICENSE
@@ -49,7 +49,7 @@ PVPUI/
 
 ### Step 1: Update Version Numbers
 
-1. Update `PVPUI.toc`:
+1. Update `evildui.toc`:
    - `## Version: X.X.X`
 
 2. Update `CHANGELOG.md` with release notes
@@ -75,7 +75,7 @@ cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
 rm -rf builds/evildui
 mkdir -p builds/evildui
 cp -r Core Locales evildUI.png LICENSE README.md CHANGELOG.md builds/evildui/
-cp PVPUI.toc builds/evildui/evildui.toc
+cp evildui.toc builds/evildui/
 cd builds
 rm -f evildui-vX.X.X.zip
 zip -r evildui-vX.X.X.zip evildui
@@ -131,7 +131,7 @@ For testing changes without a full release:
 cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
 rm -rf builds/evildui && mkdir -p builds/evildui
 cp -r Core Locales evildUI.png LICENSE README.md CHANGELOG.md builds/evildui/
-cp PVPUI.toc builds/evildui/evildui.toc
+cp evildui.toc builds/evildui/
 rm -rf "/Applications/World of Warcraft/_retail_/Interface/AddOns/evildui"
 cp -r builds/evildui "/Applications/World of Warcraft/_retail_/Interface/AddOns/"
 ```
