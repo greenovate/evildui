@@ -1,8 +1,8 @@
-# evilD UI - Copilot Instructions
+# evildUI - Copilot Instructions
 
 ## Project Overview
 
-This is **evilD UI**, a World of Warcraft addon created by **evild @ Mal'Ganis**.
+This is **evildUI**, a World of Warcraft addon created by **evild @ Mal'Ganis**.
 
 - **GitHub Repo**: `greenovate/evildui`
 - **Development folder**: `/Users/evilaptop/Documents/codework/Wow_Addons/PVPUI`

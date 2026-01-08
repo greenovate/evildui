@@ -16,7 +16,7 @@ setmetatable(L, {
 })
 
 -- General
-L["evildui"] = "evilD UI"
+L["evildui"] = "evildUI"
 L["Settings"] = "Settings"
 L["Version"] = "Version"
 

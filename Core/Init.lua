@@ -51,7 +51,7 @@ end
 
 -- Print utility
 function E:Print(...)
-    print("|cff9900ffevilD UI:|r", ...)
+    print("|cff9900ffevildUI:|r", ...)
 end
 
 -- Debug print

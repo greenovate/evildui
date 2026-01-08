@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug with evilD UI
+about: Report a bug with evildUI
 title: "[BUG] "
 labels: bug
 assignees: ''
@@ -26,7 +26,7 @@ If applicable, add screenshots.
 - Interface version (from .toc): 
 
 **Addon Version**
-- evilD UI version: 
+- evildUI version: 
 
 **Lua Error (if any)**
 ```

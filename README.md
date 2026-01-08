@@ -1,9 +1,9 @@
-# evilD UI
+# evildUI
 
 [![GitHub release](https://img.shields.io/github/v/release/greenovate/evildui)](https://github.com/greenovate/evildui/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A clean, lightweight UI addon for World of Warcraft focused on questing and PVP. Built by **evild on Mal'Ganis**. evilD UI provides powerful customization without the bloat - clean action bars, intuitive movers, mouseover keybinds, custom UI panels, and easy profile management.
+A clean, lightweight UI addon for World of Warcraft focused on questing and PVP. Built by **evild on Mal'Ganis**. evildUI provides powerful customization without the bloat - clean action bars, intuitive movers, mouseover keybinds, custom UI panels, and easy profile management.
 
 ## Features
 
@@ -102,7 +102,7 @@ Each of the 5 action bars can be configured with:
 A: evildui replaces Blizzard's default action bars. It may conflict with other action bar addons like Bartender or Dominos.
 
 **Q: Does this work with other UI addons?**
-A: evilD UI replaces core UI elements. It may conflict with addons that modify the same frames.
+A: evildUI replaces core UI elements. It may conflict with addons that modify the same frames.
 
 **Q: Why can't I move frames in combat?**
 A: WoW's secure frame system prevents modifications during combat to prevent exploits. Wait for combat to end.

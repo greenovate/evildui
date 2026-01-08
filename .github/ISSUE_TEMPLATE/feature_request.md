@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a feature for evilD UI
+about: Suggest a feature for evildUI
 title: "[FEATURE] "
 labels: enhancement
 assignees: ''
