@@ -112,14 +112,10 @@ function E:OnLogin()
     -- Register slash commands
     self:RegisterSlashCommands()
     
-    -- Show welcome splash on first install
-    if not evilduidb.welcomed then
-        C_Timer.After(2, function()
-            self:ShowWelcomeSplash()
-        end)
-    else
-        self:Print("Loaded. Type /edui for options.")
-    end
+    -- Show welcome/changelog splash (handles its own visibility logic)
+    C_Timer.After(2, function()
+        self:ShowWelcomeSplash()
+    end)
 end
 
 -- Entering world handler
@@ -320,12 +316,27 @@ function E:RequestReload()
     self:ShowReloadPrompt()
 end
 
--- Welcome splash screen
+-- Welcome/Changelog splash screen
 function E:ShowWelcomeSplash()
-    if self.WelcomeSplash then return end
+    -- Check if we should skip
+    local lastSeenVersion = evilduidb.lastSeenVersion or "0.0.0"
+    local hideChangelog = evilduidb.hideChangelog
+    
+    -- If same version and user chose to hide, skip
+    if lastSeenVersion == self.Version and hideChangelog then
+        return
+    end
+    
+    local isNewInstall = lastSeenVersion == "0.0.0"
+    local isUpdate = lastSeenVersion ~= self.Version and not isNewInstall
+    
+    if self.WelcomeSplash then
+        self.WelcomeSplash:Show()
+        return
+    end
     
     local frame = CreateFrame("Frame", "EvilDUI_WelcomeSplash", UIParent, "BackdropTemplate")
-    frame:SetSize(400, 300)
+    frame:SetSize(550, 500)
     frame:SetPoint("CENTER")
     frame:SetFrameStrata("DIALOG")
     frame:SetBackdrop({
@@ -336,37 +347,135 @@ function E:ShowWelcomeSplash()
     frame:SetBackdropColor(0.08, 0.08, 0.08, 0.98)
     frame:SetBackdropBorderColor(0.6, 0.4, 0, 1)
     frame:EnableMouse(true)
+    frame:SetMovable(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    
+    -- Close X button
+    local closeX = CreateFrame("Button", nil, frame, "UIPanelCloseButton")
+    closeX:SetPoint("TOPRIGHT", -5, -5)
+    closeX:SetScript("OnClick", function()
+        frame:Hide()
+    end)
     
     -- Logo
     local logo = frame:CreateTexture(nil, "ARTWORK")
-    logo:SetSize(128, 128)
-    logo:SetPoint("TOP", 0, -20)
+    logo:SetSize(80, 80)
+    logo:SetPoint("TOPLEFT", 20, -20)
     logo:SetTexture("Interface\\AddOns\\evildui\\evildUI")
     
     -- Title
     local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOP", logo, "BOTTOM", 0, -10)
+    title:SetPoint("LEFT", logo, "RIGHT", 15, 10)
     title:SetText("|cff9900ffevild|r|cffffffffUI|r v" .. self.Version)
     
-    -- Welcome text
-    local text = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    text:SetPoint("TOP", title, "BOTTOM", 0, -15)
-    text:SetWidth(360)
-    text:SetText("Welcome! Type |cff9900ff/evildui|r to open settings.\n\nUse |cff9900ff/edui move|r to reposition frames\nand |cff9900ff/edui kb|r for mouseover keybinds.")
+    -- Subtitle
+    local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -5)
+    if isNewInstall then
+        subtitle:SetText("Welcome! Thanks for installing evildUI.")
+    else
+        subtitle:SetText("Updated from v" .. lastSeenVersion)
+    end
     
     -- Author
     local author = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    author:SetPoint("BOTTOM", 0, 40)
+    author:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -3)
     author:SetText("|cff888888Created by evild @ Mal'Ganis|r")
+    
+    -- Divider
+    local divider = frame:CreateTexture(nil, "ARTWORK")
+    divider:SetHeight(1)
+    divider:SetPoint("TOPLEFT", 20, -115)
+    divider:SetPoint("TOPRIGHT", -20, -115)
+    divider:SetColorTexture(0.4, 0.4, 0.4, 0.5)
+    
+    -- What's New header
+    local whatsNewHeader = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    whatsNewHeader:SetPoint("TOPLEFT", 20, -125)
+    whatsNewHeader:SetText("|cff9900ffWhat's New in v" .. self.Version .. "|r")
+    
+    -- Changelog scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 20, -150)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -40, 100)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(480, 1)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    local changelogText = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    changelogText:SetPoint("TOPLEFT", 0, 0)
+    changelogText:SetWidth(480)
+    changelogText:SetJustifyH("LEFT")
+    changelogText:SetSpacing(3)
+    
+    -- Changelog content
+    local changelog = [[
+|cff00ff00New Features:|r
+• Custom UI Panels - Create resizable backdrop panels for your layout
+• Minimap settings - Square/round shape, rotation lock, scale, coordinates
+• Welcome screen with changelog (you're looking at it!)
+• Reload prompt when settings require it
+
+|cff00ff00Tips:|r
+• Type |cff9900ff/evildui|r or |cff9900ff/edui|r to open settings
+• Use |cff9900ff/edui move|r to drag and reposition any UI element
+• Use |cff9900ff/edui kb|r for mouseover keybind mode - hover a button and press a key
+• Create custom panels in Settings > UI Panels for backdrop decorations
+• Profiles can be exported and shared with other players
+
+|cff00ff00Bug Fixes:|r
+• Action bar icons now display at proper brightness
+• Keybind text properly abbreviated (MwU, MwD, etc.)
+• Micro button positioning fixed
+
+|cff00ff00Full Changelog:|r
+github.com/greenovate/evildui/blob/main/CHANGELOG.md
+]]
+    
+    changelogText:SetText(changelog)
+    scrollChild:SetHeight(changelogText:GetStringHeight() + 20)
+    
+    -- Bottom divider
+    local divider2 = frame:CreateTexture(nil, "ARTWORK")
+    divider2:SetHeight(1)
+    divider2:SetPoint("BOTTOMLEFT", 20, 95)
+    divider2:SetPoint("BOTTOMRIGHT", -20, 95)
+    divider2:SetColorTexture(0.4, 0.4, 0.4, 0.5)
+    
+    -- Hide checkbox
+    local hideCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+    hideCheck:SetPoint("BOTTOMLEFT", 15, 55)
+    hideCheck:SetSize(26, 26)
+    hideCheck:SetChecked(evilduidb.hideChangelog or false)
+    
+    local hideLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    hideLabel:SetPoint("LEFT", hideCheck, "RIGHT", 5, 0)
+    hideLabel:SetText("Don't show changelog until next update")
+    
+    -- Open Settings button
+    local settingsBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    settingsBtn:SetSize(130, 28)
+    settingsBtn:SetPoint("BOTTOMLEFT", 20, 15)
+    settingsBtn:SetText("Open Settings")
+    settingsBtn:SetScript("OnClick", function()
+        frame:Hide()
+        evilduidb.lastSeenVersion = E.Version
+        evilduidb.hideChangelog = hideCheck:GetChecked()
+        E:OpenConfig()
+    end)
     
     -- Close button
     local closeBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    closeBtn:SetSize(120, 28)
-    closeBtn:SetPoint("BOTTOM", 0, 10)
-    closeBtn:SetText("Get Started")
+    closeBtn:SetSize(130, 28)
+    closeBtn:SetPoint("BOTTOMRIGHT", -20, 15)
+    closeBtn:SetText("Close")
     closeBtn:SetScript("OnClick", function()
         frame:Hide()
-        evilduidb.welcomed = true
+        evilduidb.lastSeenVersion = E.Version
+        evilduidb.hideChangelog = hideCheck:GetChecked()
     end)
     
     self.WelcomeSplash = frame

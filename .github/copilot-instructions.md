@@ -56,6 +56,8 @@ PVPUI/
 
 3. Update `README.md` download link version if needed
 
+4. Update the changelog text in `Core/Init.lua` `ShowWelcomeSplash()` function
+
 ### Step 2: Commit and Tag
 
 ```bash
@@ -66,15 +68,16 @@ git tag vX.X.X
 git push origin main --tags
 ```
 
-### Step 3: Create Release Zip
+### Step 3: Create Release Zip (in builds folder)
 
 ```bash
-cd /Users/evilaptop/Documents/codework/Wow_Addons
-mkdir -p release
-rm -rf release/evildui
-cp -r PVPUI release/evildui
-rm -rf release/evildui/.git release/evildui/.gitignore
-cd release
+cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
+rm -rf builds/evildui
+mkdir -p builds/evildui
+cp -r Core Locales evildUI.png LICENSE README.md CHANGELOG.md builds/evildui/
+cp PVPUI.toc builds/evildui/evildui.toc
+cd builds
+rm -f evildui-vX.X.X.zip
 zip -r evildui-vX.X.X.zip evildui
 ```
 
@@ -110,15 +113,39 @@ Note the `id` from the response (e.g., `274996337`).
 curl -X POST "https://uploads.github.com/repos/greenovate/evildui/releases/RELEASE_ID/assets?name=evildui-vX.X.X.zip" \
   -H "Authorization: token YOUR_TOKEN_HERE" \
   -H "Content-Type: application/zip" \
-  --data-binary @/Users/evilaptop/Documents/codework/Wow_Addons/release/evildui-vX.X.X.zip
+  --data-binary @/Users/evilaptop/Documents/codework/Wow_Addons/PVPUI/builds/evildui-vX.X.X.zip
 ```
 
 ### Step 7: Copy to Live Folder
 
 ```bash
 rm -rf "/Applications/World of Warcraft/_retail_/Interface/AddOns/evildui"
-cp -r /Users/evilaptop/Documents/codework/Wow_Addons/release/evildui "/Applications/World of Warcraft/_retail_/Interface/AddOns/"
+cp -r /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI/builds/evildui "/Applications/World of Warcraft/_retail_/Interface/AddOns/"
 ```
+
+## Development Builds (No Release)
+
+For testing changes without a full release:
+
+```bash
+cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
+rm -rf builds/evildui && mkdir -p builds/evildui
+cp -r Core Locales evildUI.png LICENSE README.md CHANGELOG.md builds/evildui/
+cp PVPUI.toc builds/evildui/evildui.toc
+rm -rf "/Applications/World of Warcraft/_retail_/Interface/AddOns/evildui"
+cp -r builds/evildui "/Applications/World of Warcraft/_retail_/Interface/AddOns/"
+```
+
+Then `/reload` in WoW to test.
+
+## Welcome Screen / Changelog
+
+The addon shows a welcome/changelog screen on login. Update this with each version:
+
+1. Edit `Core/Init.lua` function `ShowWelcomeSplash()`
+2. Update the `changelog` variable with new features, tips, and fixes
+3. The screen tracks `lastSeenVersion` - users see it again on updates
+4. Users can check "Don't show changelog until next update" to hide it
 
 ## Code Conventions
 
