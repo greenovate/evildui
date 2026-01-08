@@ -1,5 +1,9 @@
 # evildUI
 
+<p align="center">
+  <img src="evildUI.png" alt="evildUI Logo" width="256">
+</p>
+
 [![GitHub release](https://img.shields.io/github/v/release/greenovate/evildui)](https://github.com/greenovate/evildui/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
