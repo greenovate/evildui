@@ -41,6 +41,7 @@ local Categories = {
     { id = "fonts", name = "Fonts", icon = "Interface\\Icons\\INV_Inscription_Scroll" },
     { id = "movers", name = "Movers", icon = "Interface\\Icons\\Ability_Vehicle_LaunchPlayer" },
     { id = "keybinds", name = "Keybinds", icon = "Interface\\Icons\\INV_Misc_Key_04" },
+    { id = "layouts", name = "Layouts", icon = "Interface\\Icons\\INV_Misc_Book_07" },
     { id = "profiles", name = "Profiles", icon = "Interface\\Icons\\INV_Misc_Book_09" },
 }
 
@@ -237,6 +238,7 @@ function E:CreateConfigFrame()
     frame.categoryPanels.fonts = self:CreateFontsPanel(panelContainer)
     frame.categoryPanels.movers = self:CreateMoversPanel(panelContainer)
     frame.categoryPanels.keybinds = self:CreateKeybindsPanel(panelContainer)
+    frame.categoryPanels.layouts = self:CreateLayoutsPanel(panelContainer)
     frame.categoryPanels.profiles = self:CreateProfilesPanel(panelContainer)
     
     tinsert(UISpecialFrames, "evildui_Config")
@@ -1818,6 +1820,390 @@ function E:CreateKeybindsPanel(parent)
     mouseoverCheck:SetPoint("TOPLEFT", toggleBtn, "BOTTOMLEFT", 0, -20)
     
     return panel
+end
+
+-- Layouts Panel
+function E:CreateLayoutsPanel(parent)
+    local panel = CreateFrame("Frame", nil, parent)
+    panel:SetAllPoints()
+    panel:Hide()
+    
+    local header = self:CreateSettingsHeader(panel, "Layout Manager", -20)
+    
+    local desc = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    desc:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -10)
+    desc:SetWidth(540)
+    desc:SetJustifyH("LEFT")
+    desc:SetText("Save and share your complete UI layout. Includes frame positions, action bar settings, minimap, panels, and more.")
+    
+    -- Save current layout section
+    local saveHeader = self:CreateSubHeader(panel, "Save Current Layout")
+    saveHeader:SetPoint("TOPLEFT", desc, "BOTTOMLEFT", 0, -25)
+    
+    local nameInput = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
+    nameInput:SetSize(200, 22)
+    nameInput:SetPoint("TOPLEFT", saveHeader, "BOTTOMLEFT", 5, -10)
+    nameInput:SetAutoFocus(false)
+    nameInput:SetMaxLetters(50)
+    
+    local nameLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    nameLabel:SetPoint("BOTTOMLEFT", nameInput, "TOPLEFT", 0, 3)
+    nameLabel:SetText("Layout Name:")
+    
+    local saveBtn = self:CreateButton(panel, "Save Layout", 100, function()
+        local name = nameInput:GetText()
+        local success, msg = E:SaveLayout(name)
+        E:Print(msg)
+        if success then
+            nameInput:SetText("")
+            E:RefreshLayoutsList(panel)
+        end
+    end)
+    saveBtn:SetPoint("LEFT", nameInput, "RIGHT", 10, 0)
+    
+    -- Export current layout
+    local exportBtn = self:CreateButton(panel, "Export Current", 110, function()
+        local str = E:ExportLayout()
+        if str then
+            E:ShowLayoutExportDialog(str)
+        end
+    end)
+    exportBtn:SetPoint("LEFT", saveBtn, "RIGHT", 10, 0)
+    
+    -- Import layout
+    local importBtn = self:CreateButton(panel, "Import", 80, function()
+        E:ShowLayoutImportDialog(panel)
+    end)
+    importBtn:SetPoint("LEFT", exportBtn, "RIGHT", 10, 0)
+    
+    -- Saved layouts list
+    local savedHeader = self:CreateSubHeader(panel, "Saved Layouts")
+    savedHeader:SetPoint("TOPLEFT", nameInput, "BOTTOMLEFT", -5, -25)
+    
+    local listFrame = CreateFrame("Frame", nil, panel, "BackdropTemplate")
+    listFrame:SetSize(540, 180)
+    listFrame:SetPoint("TOPLEFT", savedHeader, "BOTTOMLEFT", 0, -10)
+    listFrame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    listFrame:SetBackdropColor(0.05, 0.05, 0.05, 1)
+    listFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
+    
+    local scrollFrame = CreateFrame("ScrollFrame", nil, listFrame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 5, -5)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -25, 5)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(510, 1)
+    scrollFrame:SetScrollChild(scrollChild)
+    panel.layoutScrollChild = scrollChild
+    
+    -- History section
+    local historyHeader = self:CreateSubHeader(panel, "Layout History (auto-saved)")
+    historyHeader:SetPoint("TOPLEFT", listFrame, "BOTTOMLEFT", 0, -20)
+    
+    local historyFrame = CreateFrame("Frame", nil, panel, "BackdropTemplate")
+    historyFrame:SetSize(540, 100)
+    historyFrame:SetPoint("TOPLEFT", historyHeader, "BOTTOMLEFT", 0, -10)
+    historyFrame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    historyFrame:SetBackdropColor(0.05, 0.05, 0.05, 1)
+    historyFrame:SetBackdropBorderColor(0.2, 0.2, 0.2, 1)
+    
+    local historyScroll = CreateFrame("ScrollFrame", nil, historyFrame, "UIPanelScrollFrameTemplate")
+    historyScroll:SetPoint("TOPLEFT", 5, -5)
+    historyScroll:SetPoint("BOTTOMRIGHT", -25, 5)
+    
+    local historyChild = CreateFrame("Frame", nil, historyScroll)
+    historyChild:SetSize(510, 1)
+    historyScroll:SetScrollChild(historyChild)
+    panel.historyScrollChild = historyChild
+    
+    local clearHistoryBtn = self:CreateButton(panel, "Clear History", 100, function()
+        E:ClearLayoutHistory()
+        E:RefreshLayoutHistory(panel)
+        E:Print("Layout history cleared")
+    end)
+    clearHistoryBtn:SetPoint("TOPLEFT", historyFrame, "BOTTOMLEFT", 0, -10)
+    
+    -- Initial refresh
+    panel:SetScript("OnShow", function()
+        E:RefreshLayoutsList(panel)
+        E:RefreshLayoutHistory(panel)
+    end)
+    
+    return panel
+end
+
+function E:RefreshLayoutsList(panel)
+    local scrollChild = panel.layoutScrollChild
+    if not scrollChild then return end
+    
+    -- Clear existing entries
+    for _, child in ipairs({scrollChild:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+    end
+    
+    local layouts = E:GetSavedLayouts()
+    local yOffset = 0
+    
+    for i, layout in ipairs(layouts) do
+        local entry = CreateFrame("Frame", nil, scrollChild, "BackdropTemplate")
+        entry:SetSize(500, 32)
+        entry:SetPoint("TOPLEFT", 0, -yOffset)
+        entry:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8X8",
+        })
+        entry:SetBackdropColor(0.1, 0.1, 0.1, i % 2 == 0 and 0.5 or 0)
+        
+        -- Favorite star
+        local favBtn = CreateFrame("Button", nil, entry)
+        favBtn:SetSize(20, 20)
+        favBtn:SetPoint("LEFT", 5, 0)
+        local favTex = favBtn:CreateTexture(nil, "ARTWORK")
+        favTex:SetAllPoints()
+        favTex:SetTexture(layout.isFavorite and "Interface\\COMMON\\FavoritesIcon" or "Interface\\COMMON\\FavoritesIcon")
+        favTex:SetDesaturated(not layout.isFavorite)
+        favTex:SetAlpha(layout.isFavorite and 1 or 0.3)
+        favBtn:SetScript("OnClick", function()
+            E:ToggleLayoutFavorite(layout.name)
+            E:RefreshLayoutsList(panel)
+        end)
+        
+        -- Name
+        local name = entry:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        name:SetPoint("LEFT", favBtn, "RIGHT", 10, 0)
+        name:SetText(layout.name)
+        name:SetWidth(180)
+        name:SetJustifyH("LEFT")
+        
+        -- Date
+        local dateStr = layout.savedAt and date("%m/%d %H:%M", layout.savedAt) or "Unknown"
+        local dateText = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        dateText:SetPoint("LEFT", name, "RIGHT", 10, 0)
+        dateText:SetText(dateStr)
+        dateText:SetTextColor(0.6, 0.6, 0.6)
+        
+        -- Load button
+        local loadBtn = CreateFrame("Button", nil, entry, "UIPanelButtonTemplate")
+        loadBtn:SetSize(60, 22)
+        loadBtn:SetPoint("RIGHT", -150, 0)
+        loadBtn:SetText("Load")
+        loadBtn:SetScript("OnClick", function()
+            local success, msg = E:LoadLayout(layout.name)
+            E:Print(msg)
+        end)
+        
+        -- Export button
+        local expBtn = CreateFrame("Button", nil, entry, "UIPanelButtonTemplate")
+        expBtn:SetSize(60, 22)
+        expBtn:SetPoint("LEFT", loadBtn, "RIGHT", 5, 0)
+        expBtn:SetText("Export")
+        expBtn:SetScript("OnClick", function()
+            local str = E:ExportLayout(layout.name)
+            if str then
+                E:ShowLayoutExportDialog(str)
+            end
+        end)
+        
+        -- Delete button
+        local delBtn = CreateFrame("Button", nil, entry, "UIPanelButtonTemplate")
+        delBtn:SetSize(22, 22)
+        delBtn:SetPoint("LEFT", expBtn, "RIGHT", 5, 0)
+        delBtn:SetText("X")
+        delBtn:SetScript("OnClick", function()
+            E:DeleteLayout(layout.name)
+            E:RefreshLayoutsList(panel)
+            E:Print("Layout '" .. layout.name .. "' deleted")
+        end)
+        
+        yOffset = yOffset + 34
+    end
+    
+    if #layouts == 0 then
+        local noLayouts = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        noLayouts:SetPoint("TOPLEFT", 10, -10)
+        noLayouts:SetText("No saved layouts. Save your current layout above!")
+        noLayouts:SetTextColor(0.5, 0.5, 0.5)
+    end
+    
+    scrollChild:SetHeight(math.max(yOffset, 1))
+end
+
+function E:RefreshLayoutHistory(panel)
+    local scrollChild = panel.historyScrollChild
+    if not scrollChild then return end
+    
+    -- Clear existing entries
+    for _, child in ipairs({scrollChild:GetChildren()}) do
+        child:Hide()
+        child:SetParent(nil)
+    end
+    
+    local history = E:GetLayoutHistory()
+    local yOffset = 0
+    
+    for i, layout in ipairs(history) do
+        if i > 10 then break end -- Show only last 10
+        
+        local entry = CreateFrame("Frame", nil, scrollChild)
+        entry:SetSize(500, 24)
+        entry:SetPoint("TOPLEFT", 0, -yOffset)
+        
+        -- Label/time
+        local label = entry:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        label:SetPoint("LEFT", 5, 0)
+        local timeStr = layout.savedAt and date("%m/%d %H:%M:%S", layout.savedAt) or ""
+        label:SetText(timeStr .. " - " .. (layout.label or "Auto-save"))
+        label:SetWidth(350)
+        label:SetJustifyH("LEFT")
+        
+        -- Restore button
+        local restoreBtn = CreateFrame("Button", nil, entry, "UIPanelButtonTemplate")
+        restoreBtn:SetSize(60, 20)
+        restoreBtn:SetPoint("RIGHT", -5, 0)
+        restoreBtn:SetText("Restore")
+        restoreBtn:SetScript("OnClick", function()
+            local success, msg = E:LoadLayoutFromHistory(i)
+            E:Print(msg)
+        end)
+        
+        yOffset = yOffset + 26
+    end
+    
+    if #history == 0 then
+        local noHistory = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+        noHistory:SetPoint("TOPLEFT", 10, -5)
+        noHistory:SetText("No history yet. Changes are auto-saved when you load a layout.")
+        noHistory:SetTextColor(0.5, 0.5, 0.5)
+    end
+    
+    scrollChild:SetHeight(math.max(yOffset, 1))
+end
+
+function E:ShowLayoutExportDialog(str)
+    local frame = CreateFrame("Frame", "EvilDUI_LayoutExport", UIParent, "BackdropTemplate")
+    frame:SetSize(500, 300)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("DIALOG")
+    frame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 2,
+    })
+    frame:SetBackdropColor(0.1, 0.1, 0.1, 0.98)
+    frame:SetBackdropBorderColor(0.6, 0.4, 0, 1)
+    frame:EnableMouse(true)
+    
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", 0, -15)
+    title:SetText("|cff9900ffExport Layout|r")
+    
+    local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    desc:SetPoint("TOP", title, "BOTTOM", 0, -10)
+    desc:SetText("Copy this string and share it with others:")
+    
+    local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 20, -70)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -40, 50)
+    
+    local editBox = CreateFrame("EditBox", nil, scrollFrame)
+    editBox:SetMultiLine(true)
+    editBox:SetFontObject("ChatFontNormal")
+    editBox:SetWidth(420)
+    editBox:SetText(str)
+    editBox:SetAutoFocus(false)
+    editBox:HighlightText()
+    scrollFrame:SetScrollChild(editBox)
+    
+    editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
+    
+    local closeBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    closeBtn:SetSize(100, 26)
+    closeBtn:SetPoint("BOTTOM", 0, 15)
+    closeBtn:SetText("Close")
+    closeBtn:SetScript("OnClick", function() frame:Hide() end)
+    
+    tinsert(UISpecialFrames, "EvilDUI_LayoutExport")
+end
+
+function E:ShowLayoutImportDialog(layoutPanel)
+    local frame = CreateFrame("Frame", "EvilDUI_LayoutImport", UIParent, "BackdropTemplate")
+    frame:SetSize(500, 350)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("DIALOG")
+    frame:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 2,
+    })
+    frame:SetBackdropColor(0.1, 0.1, 0.1, 0.98)
+    frame:SetBackdropBorderColor(0.6, 0.4, 0, 1)
+    frame:EnableMouse(true)
+    
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    title:SetPoint("TOP", 0, -15)
+    title:SetText("|cff9900ffImport Layout|r")
+    
+    local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    desc:SetPoint("TOP", title, "BOTTOM", 0, -10)
+    desc:SetText("Paste a layout string below:")
+    
+    local nameLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    nameLabel:SetPoint("TOPLEFT", 20, -60)
+    nameLabel:SetText("Save as (optional):")
+    
+    local nameInput = CreateFrame("EditBox", nil, frame, "InputBoxTemplate")
+    nameInput:SetSize(200, 22)
+    nameInput:SetPoint("LEFT", nameLabel, "RIGHT", 10, 0)
+    nameInput:SetAutoFocus(false)
+    
+    local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 20, -95)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -40, 50)
+    
+    local editBox = CreateFrame("EditBox", nil, scrollFrame)
+    editBox:SetMultiLine(true)
+    editBox:SetFontObject("ChatFontNormal")
+    editBox:SetWidth(420)
+    editBox:SetText("")
+    editBox:SetAutoFocus(true)
+    scrollFrame:SetScrollChild(editBox)
+    
+    local importBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    importBtn:SetSize(100, 26)
+    importBtn:SetPoint("BOTTOMLEFT", 100, 15)
+    importBtn:SetText("Import")
+    importBtn:SetScript("OnClick", function()
+        local str = editBox:GetText()
+        local name = nameInput:GetText()
+        if name == "" then name = nil end
+        
+        local success, msg = E:ImportLayout(str, name)
+        E:Print(msg)
+        if success then
+            frame:Hide()
+            if layoutPanel then
+                E:RefreshLayoutsList(layoutPanel)
+            end
+        end
+    end)
+    
+    local cancelBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+    cancelBtn:SetSize(100, 26)
+    cancelBtn:SetPoint("BOTTOMRIGHT", -100, 15)
+    cancelBtn:SetText("Cancel")
+    cancelBtn:SetScript("OnClick", function() frame:Hide() end)
+    
+    editBox:SetScript("OnEscapePressed", function() frame:Hide() end)
+    
+    tinsert(UISpecialFrames, "EvilDUI_LayoutImport")
 end
 
 -- Profiles Panel

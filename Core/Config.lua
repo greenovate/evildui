@@ -94,7 +94,7 @@ function E:CreateConfigFrame()
     
     local title = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", 16, 0)
-    title:SetText("|cff9966ffevilD|r |cffffffffUI|r")
+    title:SetText("|cff9900ffevild|r|cffffffffUI|r")
     
     local version = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     version:SetPoint("LEFT", title, "RIGHT", 8, 0)
