@@ -5,13 +5,12 @@
 This is **evildUI**, a World of Warcraft addon created by **evild @ Mal'Ganis**.
 
 - **GitHub Repo**: `greenovate/evildui`
-- **Development folder**: `/Users/evilaptop/Documents/codework/Wow_Addons/PVPUI`
-- **Live addon folder**: `/Applications/World of Warcraft/_retail_/Interface/AddOns/evildui`
 - **Interface Version**: 110207 (The War Within)
+- **CurseForge Project ID**: 1423379
+
+> **Note**: For detailed release processes, personal paths, and session logs, check the `docs/` directory (gitignored, local only).
 
 ## Folder Structure
-
-The development folder is named `PVPUI` but the addon is packaged/released as `evildui`.
 
 ```
 PVPUI/
@@ -19,25 +18,30 @@ PVPUI/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md
 │   │   └── feature_request.md
-│   └── workflows/
-│       └── release.yml (DO NOT USE - broken, use manual process below)
+│   ├── workflows/
+│   │   └── release.yml        # Auto-publishes to GitHub + CurseForge on tag
+│   └── copilot-instructions.md
+├── .pkgmeta                   # BigWigs packager config
 ├── Core/
-│   ├── Init.lua          # Addon initialization, event handling
-│   ├── Database.lua      # Default settings, DB management
-│   ├── Config.lua        # Settings UI panel
-│   ├── ActionBars.lua    # Custom action bars
-│   ├── UnitFrames.lua    # Unit frame controls
-│   ├── Movers.lua        # Frame positioning system
-│   ├── Keybinds.lua      # Mouseover keybind system
-│   ├── Minimap.lua       # Minimap customization
-│   ├── Chat.lua          # Chat frame enhancements
-│   ├── DataBars.lua      # XP/Rep/Honor bars
-│   ├── Panels.lua        # Custom UI panels
-│   └── Profiles.lua      # Profile management
+│   ├── Init.lua               # Addon initialization, event handling, welcome splash
+│   ├── Database.lua           # Default settings, DB management
+│   ├── Config.lua             # Settings UI panel
+│   ├── ActionBars.lua         # Custom action bars, UI scaling
+│   ├── UnitFrames.lua         # Unit frame controls
+│   ├── Movers.lua             # Frame positioning system
+│   ├── Keybinds.lua           # Mouseover keybind system
+│   ├── Minimap.lua            # Minimap customization
+│   ├── Chat.lua               # Chat frame enhancements
+│   ├── DataBars.lua           # XP/Rep/Honor bars
+│   ├── Panels.lua             # Custom UI panels
+│   ├── Layouts.lua            # Layout save/load/export/import
+│   └── Profiles.lua           # Profile management
 ├── Locales/
-│   ├── Locales.lua       # Localization setup
-│   └── enUS.lua          # English strings
-├── evildui.toc           # Addon manifest
+│   ├── Locales.lua            # Localization setup
+│   └── enUS.lua               # English strings
+├── docs/                      # GITIGNORED - local planning, session logs, private notes
+├── builds/                    # GITIGNORED - local build output
+├── evildui.toc                # Addon manifest
 ├── README.md
 ├── CHANGELOG.md
 └── LICENSE
@@ -45,136 +49,54 @@ PVPUI/
 
 ## Release Process
 
-### IMPORTANT: Do NOT use gh CLI, brew, or the GitHub Actions workflow. Use curl with the GitHub API directly.
+The GitHub Actions workflow (`release.yml`) auto-publishes on tag push:
+1. Update version in: `evildui.toc`, `CHANGELOG.md`, `Core/Init.lua` (ShowWelcomeSplash)
+2. Commit and tag: `git commit -m "vX.X.X" && git tag vX.X.X && git push origin main --tags`
+3. Workflow builds and uploads to GitHub Releases + CurseForge automatically
 
-### Step 1: Update Version Numbers
+For manual release process or troubleshooting, see `docs/` directory.
 
-1. Update `evildui.toc`:
-   - `## Version: X.X.X`
+## Development Workflow
 
-2. Update `CHANGELOG.md` with release notes
-
-3. Update `README.md` download link version if needed
-
-4. Update the changelog text in `Core/Init.lua` `ShowWelcomeSplash()` function
-
-### Step 2: Commit and Tag
-
+Build and test locally:
 ```bash
-cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
-git add -A
-git commit -m "vX.X.X - Brief description"
-git tag vX.X.X
-git push origin main --tags
+# Copy to WoW AddOns folder, then /reload in game
 ```
 
-### Step 3: Create Release Zip (in builds folder)
+Check for errors in-game: `/console scriptErrors 1`
 
-```bash
-cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
-rm -rf builds/evildui
-mkdir -p builds/evildui
-cp -r Core Locales evildUI.png LICENSE README.md CHANGELOG.md builds/evildui/
-cp evildui.toc builds/evildui/
-cd builds
-rm -f evildui-vX.X.X.zip
-zip -r evildui-vX.X.X.zip evildui
-```
-
-### Step 4: Get GitHub Token
-
-```bash
-git credential fill <<< "protocol=https
-host=github.com" 2>/dev/null | grep password | cut -d= -f2
-```
-
-Save this token for the next steps.
-
-### Step 5: Create GitHub Release via API
-
-```bash
-curl -X POST https://api.github.com/repos/greenovate/evildui/releases \
-  -H "Authorization: token YOUR_TOKEN_HERE" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "tag_name": "vX.X.X",
-    "name": "vX.X.X",
-    "body": "## Features\n- Feature 1\n- Feature 2\n\n## Fixes\n- Fix 1\n- Fix 2",
-    "draft": false,
-    "prerelease": false
-  }'
-```
-
-Note the `id` from the response (e.g., `274996337`).
-
-### Step 6: Upload Zip Asset
-
-```bash
-curl -X POST "https://uploads.github.com/repos/greenovate/evildui/releases/RELEASE_ID/assets?name=evildui-vX.X.X.zip" \
-  -H "Authorization: token YOUR_TOKEN_HERE" \
-  -H "Content-Type: application/zip" \
-  --data-binary @/Users/evilaptop/Documents/codework/Wow_Addons/PVPUI/builds/evildui-vX.X.X.zip
-```
-
-### Step 7: Copy to Live Folder
-
-```bash
-rm -rf "/Applications/World of Warcraft/_retail_/Interface/AddOns/evildui"
-cp -r /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI/builds/evildui "/Applications/World of Warcraft/_retail_/Interface/AddOns/"
-```
-
-## Development Builds (No Release)
-
-For testing changes without a full release:
-
-```bash
-cd /Users/evilaptop/Documents/codework/Wow_Addons/PVPUI
-rm -rf builds/evildui && mkdir -p builds/evildui
-cp -r Core Locales evildUI.png LICENSE README.md CHANGELOG.md builds/evildui/
-cp evildui.toc builds/evildui/
-rm -rf "/Applications/World of Warcraft/_retail_/Interface/AddOns/evildui"
-cp -r builds/evildui "/Applications/World of Warcraft/_retail_/Interface/AddOns/"
-```
-
-Then `/reload` in WoW to test.
-
-## Welcome Screen / Changelog
-
-The addon shows a welcome/changelog screen on login. Update this with each version:
-
-1. Edit `Core/Init.lua` function `ShowWelcomeSplash()`
-2. Update the `changelog` variable with new features, tips, and fixes
-3. The screen tracks `lastSeenVersion` - users see it again on updates
-4. Users can check "Don't show changelog until next update" to hide it
+Open settings: `/evildui` or `/edui`
 
 ## Code Conventions
 
 ### Lua Style
 - Use `local` for all variables and functions where possible
-- Addon global table: `EvilDUI`
-- Database: `EvilDUIDB` (saved variables)
-- Use SecureActionButtonTemplate for action buttons
-- Combat lockdown checks before modifying secure frames
+- Addon namespace table: `E` (passed via `local addonName, E = ...`)
+- SavedVariables: `evilduidb` (account-wide), `evilduichardb` (per-character)
+- Use `SecureActionButtonTemplate` for action buttons
+- Always check `InCombatLockdown()` before modifying secure frames
 
 ### Frame Naming
-- Frames: `EvilDUI_FrameName`
+- Frames: `evildui_FrameName` or `EvilDUI_FrameName`
 - Action bars: `EvilDUIActionBar1`, etc.
-- Buttons: `EvilDUIActionButton1`, etc.
+- Movers: `evildui_Mover_Name`
 
 ### Database Structure
 ```lua
-EvilDUIDB = {
+evilduidb = {
     profiles = {
         ["ProfileName"] = {
+            general = { uiScale = 1.0, ... },
             actionBars = { ... },
             unitFrames = { ... },
             minimap = { ... },
             chat = { ... },
             dataBars = { ... },
             panels = { ... },
-            movers = { ... },
         }
     },
+    positions = { ... },        -- Mover positions
+    layouts = { ... },          -- Saved layouts
     currentProfile = "Default",
     dbVersion = 4,
 }
@@ -185,12 +107,24 @@ EvilDUIDB = {
 - Categories on left, settings on right
 - Helper functions: `CreateSlider()`, `CreateCheckbox()`, `CreateDropdown()`, `CreateColorPicker()`
 
+## Key Implementation Notes
+
+### UI Scaling
+Global scale uses `ScaleFromCenter()` helper in `ActionBars.lua`. Each frame is scaled individually and repositioned so its center stays at the same screen location. Do NOT use container-based scaling (scaling a parent moves children toward center).
+
+### Movers
+Movers are invisible anchor frames. Content frames attach via `SetAllPoints(mover)`. Positions saved relative to `UIParent`.
+
+### Combat Lockdown
+- Don't modify secure frames in combat
+- Use `E:QueueForCombat(func, ...)` to defer changes
+- `PLAYER_REGEN_ENABLED` event signals combat end
+
 ## Common Issues
 
 ### "Taint" errors
 - Don't modify secure frames in combat
 - Use `InCombatLockdown()` to check
-- Queue changes for after combat with `PLAYER_REGEN_ENABLED` event
 
 ### Action buttons not working
 - Must use `SecureActionButtonTemplate`
@@ -203,8 +137,8 @@ EvilDUIDB = {
 
 ## Testing
 
-1. Make changes in PVPUI folder
-2. Copy to live addon folder (or symlink)
+1. Make changes in development folder
+2. Build/copy to WoW AddOns folder
 3. `/reload` in WoW
 4. Check for lua errors: `/console scriptErrors 1`
 5. Type `/evildui` to open settings
