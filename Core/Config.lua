@@ -43,6 +43,7 @@ local Categories = {
     { id = "keybinds", name = "Keybinds", icon = "Interface\\Icons\\INV_Misc_Key_04" },
     { id = "layouts", name = "Layouts", icon = "Interface\\Icons\\INV_Misc_Book_07" },
     { id = "profiles", name = "Profiles", icon = "Interface\\Icons\\INV_Misc_Book_09" },
+    { id = "about", name = "About", icon = "Interface\\Icons\\INV_Misc_QuestionMark" },
 }
 
 function E:OpenConfig()
@@ -240,9 +241,14 @@ function E:CreateConfigFrame()
     frame.categoryPanels.keybinds = self:CreateKeybindsPanel(panelContainer)
     frame.categoryPanels.layouts = self:CreateLayoutsPanel(panelContainer)
     frame.categoryPanels.profiles = self:CreateProfilesPanel(panelContainer)
+    frame.categoryPanels.about = self:CreateAboutPanel(panelContainer)
     
     tinsert(UISpecialFrames, "evildui_Config")
-    self:SelectCategory("general")
+    
+    -- Select general category and ensure it's visible
+    C_Timer.After(0, function()
+        self:SelectCategory("general")
+    end)
     
     return frame
 end
@@ -2325,6 +2331,102 @@ function E:CreateProfilesPanel(parent)
     
     return panel
 end
+
+-- About Panel
+function E:CreateAboutPanel(parent)
+    local panel = CreateFrame("Frame", nil, parent)
+    panel:SetAllPoints()
+    panel:Hide()
+    
+    -- Center container for about content
+    local container = CreateFrame("Frame", nil, panel)
+    container:SetSize(500, 400)
+    container:SetPoint("CENTER", 0, 20)
+    
+    -- Logo
+    local logo = container:CreateTexture(nil, "ARTWORK")
+    logo:SetSize(128, 128)
+    logo:SetPoint("TOP", 0, 0)
+    logo:SetTexture("Interface\\AddOns\\evildui\\evildUI")
+    
+    -- Title
+    local title = container:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
+    title:SetPoint("TOP", logo, "BOTTOM", 0, -15)
+    title:SetText("|cff9900ffevild|r|cffffffffUI|r")
+    
+    -- Version
+    local version = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    version:SetPoint("TOP", title, "BOTTOM", 0, -5)
+    version:SetText("Version " .. (E.version or "0.0.3"))
+    version:SetTextColor(0.6, 0.6, 0.6)
+    
+    -- Author
+    local author = container:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    author:SetPoint("TOP", version, "BOTTOM", 0, -25)
+    author:SetText("Created by |cff00ff00evild|r @ |cffff8800Mal'Ganis|r")
+    
+    -- Description
+    local desc = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    desc:SetPoint("TOP", author, "BOTTOM", 0, -20)
+    desc:SetText("A lightweight, modern UI replacement for World of Warcraft.\nNo bloat. No dependencies. Just clean, functional design.")
+    desc:SetJustifyH("CENTER")
+    desc:SetTextColor(0.8, 0.8, 0.8)
+    desc:SetWidth(400)
+    
+    -- Discord section
+    local discordLabel = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    discordLabel:SetPoint("TOP", desc, "BOTTOM", 0, -35)
+    discordLabel:SetText("Need help or want to share feedback?")
+    discordLabel:SetTextColor(0.7, 0.7, 0.7)
+    
+    -- Discord button
+    local discordBtn = self:CreateButton(container, "Join Discord", 160, function()
+        -- Create a popup with the Discord link
+        StaticPopup_Show("EVILDUI_DISCORD_LINK")
+    end)
+    discordBtn:SetPoint("TOP", discordLabel, "BOTTOM", 0, -10)
+    discordBtn:SetBackdropBorderColor(0.45, 0.45, 0.8, 1)
+    
+    -- Discord icon on button
+    local discordIcon = discordBtn:CreateTexture(nil, "OVERLAY")
+    discordIcon:SetSize(18, 18)
+    discordIcon:SetPoint("LEFT", 10, 0)
+    discordIcon:SetTexture("Interface\\Icons\\INV_Misc_GroupNeedMore")
+    discordIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    
+    -- GitHub link
+    local githubLabel = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    githubLabel:SetPoint("TOP", discordBtn, "BOTTOM", 0, -25)
+    githubLabel:SetText("|cff888888github.com/greenovate/evildui|r")
+    
+    -- Credits
+    local credits = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    credits:SetPoint("BOTTOM", panel, "BOTTOM", 0, 30)
+    credits:SetText("Made with |cffff0000♥|r for the WoW community")
+    credits:SetTextColor(0.5, 0.5, 0.5)
+    
+    return panel
+end
+
+-- Discord link popup
+StaticPopupDialogs["EVILDUI_DISCORD_LINK"] = {
+    text = "Join the evildUI Discord for support:\n\n|cff7289DAhttps://discord.gg/8P3f3VvNDy|r\n\nPress Ctrl+C to copy:",
+    button1 = "Close",
+    hasEditBox = true,
+    editBoxWidth = 250,
+    OnShow = function(self)
+        self.editBox:SetText("https://discord.gg/8P3f3VvNDy")
+        self.editBox:HighlightText()
+        self.editBox:SetFocus()
+    end,
+    EditBoxOnEnterPressed = function(self)
+        self:GetParent():Hide()
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+    preferredIndex = 3,
+}
 
 -- Static popups
 StaticPopupDialogs["EVILDUI_CONFIRM_RESET"] = {
