@@ -2340,14 +2340,14 @@ function E:CreateAboutPanel(parent)
     
     -- Center container for about content
     local container = CreateFrame("Frame", nil, panel)
-    container:SetSize(500, 400)
-    container:SetPoint("CENTER", 0, 20)
+    container:SetSize(500, 500)
+    container:SetPoint("TOP", 0, -30)
     
     -- Logo
     local logo = container:CreateTexture(nil, "ARTWORK")
     logo:SetSize(128, 128)
     logo:SetPoint("TOP", 0, 0)
-    logo:SetTexture("Interface\\AddOns\\evildui\\evildUI")
+    logo:SetTexture("Interface\\AddOns\\evildui\\evildUI.png")
     
     -- Title
     local title = container:CreateFontString(nil, "OVERLAY", "GameFontNormalHuge")
@@ -2379,30 +2379,48 @@ function E:CreateAboutPanel(parent)
     discordLabel:SetText("Need help or want to share feedback?")
     discordLabel:SetTextColor(0.7, 0.7, 0.7)
     
-    -- Discord button
-    local discordBtn = self:CreateButton(container, "Join Discord", 160, function()
-        -- Create a popup with the Discord link
+    -- Discord button with custom styling
+    local discordBtn = CreateFrame("Button", nil, container, "BackdropTemplate")
+    discordBtn:SetSize(180, 36)
+    discordBtn:SetPoint("TOP", discordLabel, "BOTTOM", 0, -10)
+    discordBtn:SetBackdrop({
+        bgFile = "Interface\\Buttons\\WHITE8X8",
+        edgeFile = "Interface\\Buttons\\WHITE8X8",
+        edgeSize = 1,
+    })
+    discordBtn:SetBackdropColor(0.34, 0.40, 0.87, 0.9) -- Discord blurple
+    discordBtn:SetBackdropBorderColor(0.45, 0.50, 0.95, 1)
+    
+    -- Discord logo text (using stylized D icon representation)
+    local discordIcon = discordBtn:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    discordIcon:SetPoint("LEFT", 12, 0)
+    discordIcon:SetText("|cffffffffD|r")
+    discordIcon:SetTextColor(1, 1, 1)
+    
+    local discordText = discordBtn:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    discordText:SetPoint("CENTER", 8, 0)
+    discordText:SetText("Join our Discord")
+    discordText:SetTextColor(1, 1, 1)
+    
+    discordBtn:SetScript("OnEnter", function(self)
+        self:SetBackdropColor(0.45, 0.50, 0.95, 1)
+    end)
+    discordBtn:SetScript("OnLeave", function(self)
+        self:SetBackdropColor(0.34, 0.40, 0.87, 0.9)
+    end)
+    discordBtn:SetScript("OnClick", function()
         StaticPopup_Show("EVILDUI_DISCORD_LINK")
     end)
-    discordBtn:SetPoint("TOP", discordLabel, "BOTTOM", 0, -10)
-    discordBtn:SetBackdropBorderColor(0.45, 0.45, 0.8, 1)
-    
-    -- Discord icon on button
-    local discordIcon = discordBtn:CreateTexture(nil, "OVERLAY")
-    discordIcon:SetSize(18, 18)
-    discordIcon:SetPoint("LEFT", 10, 0)
-    discordIcon:SetTexture("Interface\\Icons\\INV_Misc_GroupNeedMore")
-    discordIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     
     -- GitHub link
     local githubLabel = container:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     githubLabel:SetPoint("TOP", discordBtn, "BOTTOM", 0, -25)
     githubLabel:SetText("|cff888888github.com/greenovate/evildui|r")
     
-    -- Credits
+    -- Credits with proper heart symbol
     local credits = container:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     credits:SetPoint("BOTTOM", panel, "BOTTOM", 0, 30)
-    credits:SetText("Made with |cffff0000♥|r for the WoW community")
+    credits:SetText("Made with |cffff0000<3|r for the WoW community")
     credits:SetTextColor(0.5, 0.5, 0.5)
     
     return panel
@@ -2413,13 +2431,25 @@ StaticPopupDialogs["EVILDUI_DISCORD_LINK"] = {
     text = "Join the evildUI Discord for support:\n\n|cff7289DAhttps://discord.gg/8P3f3VvNDy|r\n\nPress Ctrl+C to copy:",
     button1 = "Close",
     hasEditBox = true,
-    editBoxWidth = 250,
-    OnShow = function(self)
-        self.editBox:SetText("https://discord.gg/8P3f3VvNDy")
-        self.editBox:HighlightText()
-        self.editBox:SetFocus()
+    editBoxWidth = 280,
+    OnShow = function(self, data)
+        local editBox = self.editBox or _G[self:GetName() .. "EditBox"]
+        if editBox then
+            editBox:SetText("https://discord.gg/8P3f3VvNDy")
+            editBox:SetFocus()
+            editBox:HighlightText()
+        end
+    end,
+    OnHide = function(self)
+        local editBox = self.editBox or _G[self:GetName() .. "EditBox"]
+        if editBox then
+            editBox:SetText("")
+        end
     end,
     EditBoxOnEnterPressed = function(self)
+        self:GetParent():Hide()
+    end,
+    EditBoxOnEscapePressed = function(self)
         self:GetParent():Hide()
     end,
     timeout = 0,
