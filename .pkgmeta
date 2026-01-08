@@ -1,4 +1,4 @@
-package-as: evildui
+package-as: evildUI
 
 enable-nolib-creation: no
 
