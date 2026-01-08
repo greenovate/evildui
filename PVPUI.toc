@@ -1,14 +1,14 @@
 ## Interface: 110207
-## Title: |cff9900ffevilD|r |cffffffffUI|r
+## Title: |cff9900ffevild|r|cffffffffUI|r
 ## Notes: Clean questing and PVP interface addon with movers, mouseover keybinds, and profiles
 ## Author: evild @ Mal'Ganis
 ## Version: 0.0.2
 ## SavedVariables: evilduidb
 ## SavedVariablesPerCharacter: evilduichardb
-## IconTexture: Interface\Icons\Achievement_PVP_Legion08
+## IconTexture: Interface\AddOns\evildui\evildUI
 ## Category: Action Bars
 
-## X-Website: https://github.com/evilD-WoW/evildui
+## X-Website: https://github.com/greenovate/evildui
 ## X-License: MIT
 ## X-Category: Action Bars
 ## X-Localizations: enUS

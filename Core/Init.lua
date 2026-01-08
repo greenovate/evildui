@@ -58,7 +58,7 @@ end
 E.Debug = false
 function E:DebugPrint(...)
     if self.Debug then
-        print("|cffff9900evilD Debug:|r", ...)
+        print("|cffff9900evildUI Debug:|r", ...)
     end
 end
 
