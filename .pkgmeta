@@ -11,6 +11,7 @@ ignore:
     - ".pkgmeta"
     - "screenshots"
     - "docs"
+    - "builds"
 
 manual-changelog:
     filename: CHANGELOG.md

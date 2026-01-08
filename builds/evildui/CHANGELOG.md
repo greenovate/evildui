@@ -5,6 +5,17 @@ All notable changes to evildui will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4] - 2026-01-08
+
+### Added
+- Global UI Scale slider - scale all UI elements from 0.5x to 2.0x
+- Center-based scaling keeps elements visually in place when scaling
+
+### Fixed
+- UI Panels now have movers for repositioning
+- Chat panel movers consolidated and working properly
+- Backwards compatibility for saved positions
+
 ## [0.0.3] - 2026-01-07
 
 ### Added
