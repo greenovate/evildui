@@ -21,9 +21,12 @@ function E:InitializeChat()
     -- Setup chat copy buttons
     self:SetupChatCopy()
     
-    -- Setup dual panels if enabled
+    -- Setup chat movers - either dual panels or single main chat
     if db.chat.dualPanels then
         self:SetupDualChatPanels()
+    else
+        -- Create mover for main chat frame only
+        self:CreateMainChatMover()
     end
     
     -- Style chat frames
@@ -236,6 +239,68 @@ function E:GetChatMessages(chatFrame)
     return table.concat(messages, "\n")
 end
 
+-- Helper function to attach chat frame to mover with ForcePosition pattern
+local function AttachChatToMover(mover, chatFrame, anchorPoint)
+    if not mover or not chatFrame then return end
+    
+    mover.attachedFrame = chatFrame
+    mover.attachPoint = anchorPoint or "BOTTOMLEFT"
+    
+    -- Function to force position and update size
+    local function ForcePosition()
+        if InCombatLockdown() then return end
+        
+        -- Update mover size to match chat frame
+        local w = chatFrame:GetWidth()
+        local h = chatFrame:GetHeight()
+        if w and h and w > 0 and h > 0 then
+            mover:SetSize(w, h)
+        end
+        
+        chatFrame:SetUserPlaced(true)
+        chatFrame:ClearAllPoints()
+        chatFrame:SetPoint(anchorPoint or "BOTTOMLEFT", mover, anchorPoint or "BOTTOMLEFT", 0, 0)
+    end
+    
+    -- Initial position
+    C_Timer.After(0.5, ForcePosition)
+    
+    -- Use OnUpdate to keep it positioned (throttled)
+    mover.updateTimer = 0
+    mover:SetScript("OnUpdate", function(self, elapsed)
+        self.updateTimer = self.updateTimer + elapsed
+        if self.updateTimer >= 1.0 then
+            self.updateTimer = 0
+            ForcePosition()
+        end
+    end)
+    
+    -- Reposition after drag
+    mover:HookScript("OnDragStop", ForcePosition)
+end
+
+-- Create mover for main chat frame (used when dual panels is disabled)
+function E:CreateMainChatMover()
+    local chatFrame = ChatFrame1
+    if not chatFrame then return end
+    
+    local width = chatFrame:GetWidth() or 400
+    local height = chatFrame:GetHeight() or 200
+    
+    local mover = self:CreateMover(
+        "ChatFrame",
+        width,
+        height,
+        "BOTTOMLEFT",
+        UIParent,
+        "BOTTOMLEFT",
+        4,
+        32
+    )
+    
+    AttachChatToMover(mover, chatFrame, "BOTTOMLEFT")
+end
+
 -- Setup dual chat panels (left for general, right for loot/trade)
 function E:SetupDualChatPanels()
     local db = self:GetDB()
@@ -243,18 +308,41 @@ function E:SetupDualChatPanels()
     
     -- Offset for bottom data bar
     local dataBarOffset = 28
+    local leftWidth = db.chat.leftWidth or 400
+    local leftHeight = db.chat.leftHeight or 200
+    local rightWidth = db.chat.rightWidth or 350
+    local rightHeight = db.chat.rightHeight or 180
     
-    -- Move ChatFrame1 to left
-    ChatFrame1:ClearAllPoints()
-    ChatFrame1:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 20, dataBarOffset + 8)
-    ChatFrame1:SetSize(db.chat.leftWidth or 400, db.chat.leftHeight or 200)
+    -- Create mover for left chat (ChatFrame1)
+    local leftMover = self:CreateMover(
+        "ChatFrame",  -- Use same name as main chat mover so positions are shared
+        leftWidth,
+        leftHeight,
+        "BOTTOMLEFT",
+        UIParent,
+        "BOTTOMLEFT",
+        20,
+        dataBarOffset + 8
+    )
+    AttachChatToMover(leftMover, ChatFrame1, "BOTTOMLEFT")
+    ChatFrame1:SetSize(leftWidth, leftHeight)
     
     -- Setup right chat frame (ChatFrame3 typically) for loot/trade
     local rightChat = ChatFrame3
     if rightChat then
-        rightChat:ClearAllPoints()
-        rightChat:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -20, dataBarOffset + 8)
-        rightChat:SetSize(db.chat.rightWidth or 350, db.chat.rightHeight or 180)
+        -- Create mover for right chat
+        local rightMover = self:CreateMover(
+            "RightChat",
+            rightWidth,
+            rightHeight,
+            "BOTTOMRIGHT",
+            UIParent,
+            "BOTTOMRIGHT",
+            -20,
+            dataBarOffset + 8
+        )
+        AttachChatToMover(rightMover, rightChat, "BOTTOMRIGHT")
+        rightChat:SetSize(rightWidth, rightHeight)
         
         -- Make sure it's visible
         if FCF_SetWindowName then

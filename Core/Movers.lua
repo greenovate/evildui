@@ -84,7 +84,14 @@ function MoverMixin:SavePosition()
     end
     
     local point, relativeTo, relativePoint, x, y = self:GetPoint()
-    local parentName = relativeTo and relativeTo:GetName() or "UIParent"
+    -- Normalize parent name
+    local parentName = "UIParent"
+    if relativeTo then
+        local name = relativeTo:GetName()
+        if name and name ~= "UIParent" then
+            parentName = name
+        end
+    end
     
     db.positions[self.moverName] = {
         point = point,
@@ -104,7 +111,12 @@ function MoverMixin:ApplyPosition()
     end
     
     local pos = db.positions[self.moverName]
-    local relativeTo = _G[pos.relativeTo] or UIParent
+    -- Handle backwards compatibility - old saves may have evildui_UIParent
+    local parentName = pos.relativeTo
+    if parentName == "evildui_UIParent" then
+        parentName = "UIParent"
+    end
+    local relativeTo = _G[parentName] or UIParent
     
     self:ClearAllPoints()
     self:SetPoint(pos.point, relativeTo, pos.relativePoint, pos.x, pos.y)
@@ -145,16 +157,20 @@ function E:CreateMover(name, width, height, defaultPoint, defaultRelativeTo, def
         return self.Movers[name]
     end
     
-    local mover = CreateFrame("Frame", "evildui_Mover_" .. name, UIParent, "BackdropTemplate")
+    -- Parent to UIParent, scale individually via ApplyUIScale
+    local parent = UIParent
+    local relTo = defaultRelativeTo or UIParent
+    
+    local mover = CreateFrame("Frame", "evildui_Mover_" .. name, parent, "BackdropTemplate")
     Mixin(mover, MoverMixin)
     mover:OnLoad()
     
     mover:SetSize(width or 100, height or 30)
     mover:SetMoverName(name)
-    mover:SetDefaultPosition(defaultPoint or "CENTER", defaultRelativeTo or UIParent, defaultRelativePoint or "CENTER", defaultX or 0, defaultY or 0)
+    mover:SetDefaultPosition(defaultPoint or "CENTER", relTo, defaultRelativePoint or "CENTER", defaultX or 0, defaultY or 0)
     
     -- Set initial position
-    mover:SetPoint(defaultPoint or "CENTER", defaultRelativeTo or UIParent, defaultRelativePoint or "CENTER", defaultX or 0, defaultY or 0)
+    mover:SetPoint(defaultPoint or "CENTER", relTo, defaultRelativePoint or "CENTER", defaultX or 0, defaultY or 0)
     
     -- Scripts
     mover:SetScript("OnDragStart", mover.OnDragStart)
@@ -162,6 +178,12 @@ function E:CreateMover(name, width, height, defaultPoint, defaultRelativeTo, def
     
     -- Load saved position
     mover:ApplyPosition()
+    
+    -- Apply current scale
+    local db = E:GetDB()
+    if db and db.general and db.general.uiScale then
+        mover:SetScale(db.general.uiScale)
+    end
     
     -- Register
     self.Movers[name] = mover

@@ -37,12 +37,28 @@ function E:CreateCustomPanel(panelData)
     end
     data.id = id
     
-    -- Create the frame
+    -- Create mover for this panel
+    local mover = self:CreateMover(
+        "Panel_" .. id,
+        data.width,
+        data.height,
+        data.point,
+        UIParent,
+        data.relativePoint,
+        data.x,
+        data.y
+    )
+    
+    -- Create the frame and attach to mover
     local panel = CreateFrame("Frame", "evildui_Panel_" .. id, UIParent, "BackdropTemplate")
     panel:SetSize(data.width, data.height)
-    panel:SetPoint(data.point, UIParent, data.relativePoint, data.x, data.y)
+    panel:SetAllPoints(mover)
     panel:SetFrameStrata("BACKGROUND")
     panel:SetFrameLevel(1)
+    
+    -- Store mover reference
+    panel.mover = mover
+    mover.attachedFrame = panel
     
     -- Apply backdrop
     panel:SetBackdrop({
@@ -112,8 +128,11 @@ function E:UpdatePanelStyle(panelId)
     
     local data = panel.panelData
     
-    -- Update size
+    -- Update size (also update mover)
     panel:SetSize(data.width, data.height)
+    if panel.mover then
+        panel.mover:UpdateSize(data.width, data.height)
+    end
     
     -- Update backdrop
     panel:SetBackdrop({
@@ -140,6 +159,11 @@ end
 function E:DeleteCustomPanel(panelId)
     local panel = self.CustomPanels[panelId]
     if panel then
+        -- Hide and remove mover
+        if panel.mover then
+            panel.mover:Hide()
+            self.Movers["Panel_" .. panelId] = nil
+        end
         panel:Hide()
         panel:SetParent(nil)
         self.CustomPanels[panelId] = nil
@@ -149,6 +173,10 @@ function E:DeleteCustomPanel(panelId)
     local db = self:GetDB()
     if db.panels and db.panels.list then
         db.panels.list[panelId] = nil
+    end
+    -- Also remove saved position
+    if db.positions then
+        db.positions["Panel_" .. panelId] = nil
     end
 end
 

@@ -109,8 +109,12 @@ function E:OnLogin()
     self:InitializeMinimap()
     self:InitializePanels()
     
-    -- NOTE: Global UI scale disabled - causes position issues
-    -- TODO: Implement container-based scaling in future version
+    -- Apply global UI scale after all modules initialized
+    C_Timer.After(0.2, function()
+        if self.ApplyUIScale then
+            self:ApplyUIScale()
+        end
+    end)
     
     -- Register slash commands
     self:RegisterSlashCommands()
@@ -416,24 +420,22 @@ function E:ShowWelcomeSplash()
     
     -- Changelog content
     local changelog = [[
-|cff00ff00New in v0.0.3:|r
-• Layout Manager - Save, share, and import complete UI layouts!
-• Layout history with auto-save before loading
-• Export/import layouts as shareable text strings
-• Favorite layouts for quick access
-• Welcome screen with changelog on updates
+|cff00ff00New in v0.0.4:|r
+• Global UI Scale - scale all UI elements from 0.5x to 2.0x!
+• Center-based scaling keeps elements in place while resizing
+• Fixed UI Panel and Chat panel movers
 
 |cff00ff00Tips:|r
 • Type |cff9900ff/evildui|r or |cff9900ff/edui|r to open settings
 • Use |cff9900ff/edui move|r to drag and reposition any UI element
 • Use |cff9900ff/edui kb|r for mouseover keybind mode
+• Adjust Global Scale in Settings > General > UI Options
 • Save your layout in Settings > Layouts to share or backup
-• Create custom panels in Settings > UI Panels for backdrops
 
 |cff00ff00Previous Updates:|r
+• Layout Manager with export/import
 • Custom UI Panels system
 • Minimap settings (shape, rotation, scale, coords)
-• Action bar improvements
 
 |cff00ff00Full Changelog:|r
 github.com/greenovate/evildui/blob/main/CHANGELOG.md

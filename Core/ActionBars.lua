@@ -532,8 +532,7 @@ function E:InitializeActionBars()
     -- Create movers for other Blizzard UI elements
     self:CreateBlizzardMovers()
     
-    -- Create chat frame mover
-    self:CreateChatMover()
+    -- Note: Chat movers are created in Chat.lua InitializeChat()
     
     -- Create buff/debuff movers
     self:CreateBuffMovers()
@@ -973,62 +972,7 @@ function E:CreateBlizzardMovers()
     
 end
 
--- Create mover for main chat frame
-function E:CreateChatMover()
-    local chatFrame = ChatFrame1
-    if not chatFrame then return end
-    
-    local width = chatFrame:GetWidth() or 400
-    local height = chatFrame:GetHeight() or 200
-    
-    local mover = self:CreateMover(
-        "ChatFrame",
-        width,
-        height,
-        "BOTTOMLEFT",
-        UIParent,
-        "BOTTOMLEFT",
-        4,
-        32
-    )
-    
-    if mover then
-        mover.attachedFrame = chatFrame
-        mover.attachPoint = "BOTTOMLEFT"
-        
-        -- Function to force position and update size
-        local function ForcePosition()
-            if InCombatLockdown() then return end
-            
-            -- Update mover size to match chat frame
-            local w = chatFrame:GetWidth()
-            local h = chatFrame:GetHeight()
-            if w and h and w > 0 and h > 0 then
-                mover:SetSize(w, h)
-            end
-            
-            chatFrame:SetUserPlaced(true)
-            chatFrame:ClearAllPoints()
-            chatFrame:SetPoint("BOTTOMLEFT", mover, "BOTTOMLEFT", 0, 0)
-        end
-        
-        -- Initial position
-        C_Timer.After(0.5, ForcePosition)
-        
-        -- Use OnUpdate to keep it positioned (throttled)
-        mover.updateTimer = 0
-        mover:SetScript("OnUpdate", function(self, elapsed)
-            self.updateTimer = self.updateTimer + elapsed
-            if self.updateTimer >= 1.0 then
-                self.updateTimer = 0
-                ForcePosition()
-            end
-        end)
-        
-        -- Reposition after drag
-        mover:HookScript("OnDragStop", ForcePosition)
-    end
-end
+-- NOTE: Chat movers are now handled in Chat.lua (CreateMainChatMover and SetupDualChatPanels)
 
 -- Create movers for buff/debuff frames (TWW compatible)
 function E:CreateBuffMovers()
@@ -1178,28 +1122,84 @@ function E:ToggleMacroText(show)
     end
 end
 
+-- Helper: Scale a frame from its center (keeps visual position stable)
+local function ScaleFromCenter(frame, scale, oldScale)
+    if not frame then return end
+    
+    -- Get current center in screen coordinates
+    local centerX, centerY = frame:GetCenter()
+    if not centerX or not centerY then 
+        frame:SetScale(scale)
+        return 
+    end
+    
+    -- Convert to absolute screen position (account for current scale)
+    local screenX = centerX * oldScale
+    local screenY = centerY * oldScale
+    
+    -- Apply new scale
+    frame:SetScale(scale)
+    
+    -- Calculate new position so center stays at same screen location
+    -- After scaling, the frame's coordinate space changes
+    local newCenterX = screenX / scale
+    local newCenterY = screenY / scale
+    
+    -- Reposition to keep center in place
+    frame:ClearAllPoints()
+    frame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", newCenterX, newCenterY)
+end
+
 -- Apply global UI scale
+-- Scale the actual content frames from their centers
 function E:ApplyUIScale()
     local db = self:GetDB()
     if not db or not db.general then return end
     
     local scale = db.general.uiScale or 1.0
+    if scale < 0.5 then scale = 0.5 end
+    if scale > 2.0 then scale = 2.0 end
     
-    -- Apply to our action bars
-    for _, bar in pairs(self.ActionBars) do
+    -- Get old scale (default to 1 if not set)
+    local oldScale = self.currentUIScale or 1.0
+    self.currentUIScale = scale
+    
+    -- If scale hasn't changed, skip
+    if scale == oldScale then return end
+    
+    -- Scale action bars from center
+    for _, bar in pairs(self.ActionBars or {}) do
         if bar then
-            bar:SetScale(scale)
+            ScaleFromCenter(bar, scale, oldScale)
         end
     end
     
-    -- Apply to movers if they exist
-    for _, mover in pairs(self.Movers or {}) do
+    -- Scale movers from center (they anchor content)
+    for name, mover in pairs(self.Movers or {}) do
         if mover then
-            mover:SetScale(scale)
+            ScaleFromCenter(mover, scale, oldScale)
         end
     end
     
-    -- Apply to data bars
+    -- Scale unit frames from center
+    ScaleFromCenter(PlayerFrame, scale, oldScale)
+    ScaleFromCenter(TargetFrame, scale, oldScale)
+    ScaleFromCenter(FocusFrame, scale, oldScale)
+    ScaleFromCenter(TargetFrameToT, scale, oldScale)
+    
+    -- Scale party/raid frames
+    ScaleFromCenter(CompactRaidFrameContainer, scale, oldScale)
+    ScaleFromCenter(PartyFrame, scale, oldScale)
+    
+    -- Scale chat frames from center
+    for i = 1, NUM_CHAT_WINDOWS do
+        local chatFrame = _G["ChatFrame" .. i]
+        if chatFrame then
+            ScaleFromCenter(chatFrame, scale, oldScale)
+        end
+    end
+    
+    -- Scale data bars (these are screen-edge anchored, just scale)
     if self.DataBars then
         if self.DataBars.top then
             self.DataBars.top:SetScale(scale)
@@ -1209,37 +1209,26 @@ function E:ApplyUIScale()
         end
     end
     
-    -- Apply to custom UI panels
-    if self.CustomPanels then
-        for _, panel in pairs(self.CustomPanels) do
+    -- Scale buff/debuff frames from center
+    ScaleFromCenter(BuffFrame, scale, oldScale)
+    ScaleFromCenter(DebuffFrame, scale, oldScale)
+    
+    -- Scale minimap from center
+    ScaleFromCenter(MinimapCluster, scale, oldScale)
+    
+    -- Scale objective tracker from center
+    ScaleFromCenter(ObjectiveTrackerFrame, scale, oldScale)
+    
+    -- Scale panels from center
+    if self.Panels then
+        for _, panel in pairs(self.Panels) do
             if panel then
-                panel:SetScale(scale)
+                ScaleFromCenter(panel, scale, oldScale)
             end
         end
     end
     
-    -- Apply to minimap frame if we have one
-    if self.MinimapFrame then
-        self.MinimapFrame:SetScale(scale)
-    end
-    
-    -- Apply to unit frames
-    if self.UnitFrames then
-        for _, frame in pairs(self.UnitFrames) do
-            if frame then
-                frame:SetScale(scale)
-            end
-        end
-    end
-    
-    -- Apply to chat frames we've styled
-    if self.StyledChatFrames then
-        for _, frame in pairs(self.StyledChatFrames) do
-            if frame then
-                frame:SetScale(scale)
-            end
-        end
-    end
+    self:DebugPrint("Applied UI scale:", scale)
 end
 
 -- Apply action bar fonts
