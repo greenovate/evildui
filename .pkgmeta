@@ -15,6 +15,3 @@ ignore:
 manual-changelog:
     filename: CHANGELOG.md
     markup-type: markdown
-
-move-folders:
-    PVPUI/PVPUI: evildui
