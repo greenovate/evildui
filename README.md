@@ -1,6 +1,6 @@
 # evilD UI
 
-[![GitHub release](https://img.shields.io/github/v/release/evilD-WoW/evildui)](https://github.com/evilD-WoW/evildui/releases)
+[![GitHub release](https://img.shields.io/github/v/release/greenovate/evildui)](https://github.com/greenovate/evildui/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A clean, lightweight UI addon for World of Warcraft focused on questing and PVP. Built by **evild on Mal'Ganis**. evilD UI provides powerful customization without the bloat - clean action bars, intuitive movers, mouseover keybinds, custom UI panels, and easy profile management.
@@ -38,13 +38,13 @@ A clean, lightweight UI addon for World of Warcraft focused on questing and PVP.
 
 ## 📥 Download
 
-### [⬇️ Download Latest Release (v0.0.2)](https://github.com/evilD-WoW/evildui/releases/latest)
+### [⬇️ Download Latest Release (v0.0.2)](https://github.com/greenovate/evildui/releases/latest)
 
 Click the link above, then download `evildui-v0.0.2.zip` from the Assets section.
 
 ## Installation
 
-1. Download `evildui-vX.X.X.zip` from [Releases](https://github.com/evilD-WoW/evildui/releases)
+1. Download `evildui-vX.X.X.zip` from [Releases](https://github.com/greenovate/evildui/releases)
 2. Extract the `evildui` folder to `World of Warcraft/_retail_/Interface/AddOns/`
 3. Restart WoW or type `/reload`
 4. Type `/evildui` to open settings
