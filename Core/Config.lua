@@ -33,7 +33,7 @@ local Categories = {
     { id = "general", name = "General", icon = "Interface\\Icons\\INV_Misc_Gear_01" },
     { id = "actionbars", name = "Action Bars", icon = "Interface\\Icons\\Spell_Nature_EnchantArmor" },
     { id = "menubar", name = "Menu Bar", icon = "Interface\\Icons\\INV_Misc_Bag_10" },
-    { id = "unitframes", name = "Unit Frames", icon = "Interface\\Icons\\Spell_Shadow_Sacrificial" },
+    { id = "unitframes", name = "Unit Frames", icon = "Interface\\Icons\\Spell_Holy_SealOfSacrifice" },
     { id = "databars", name = "Data Bars", icon = "Interface\\Icons\\INV_Misc_Spyglass_03" },
     { id = "minimap", name = "Minimap", icon = "Interface\\Icons\\INV_Misc_Map02" },
     { id = "panels", name = "UI Panels", icon = "Interface\\Icons\\INV_Misc_EngGizmos_20" },
@@ -1079,12 +1079,29 @@ function E:CreateUnitFramesPanel(parent)
     panel:SetAllPoints()
     panel:Hide()
     
-    local header = self:CreateSettingsHeader(panel, "Unit Frame Settings", -20)
+    -- Create scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 0)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 700)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    -- Style the scroll bar
+    local scrollBar = scrollFrame.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -4, -20)
+        scrollBar:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, 20)
+    end
+    
+    local header = self:CreateSettingsHeader(scrollChild, "Unit Frame Settings", -20)
     
     local db = self:GetDB()
     
     -- Global enable
-    local enableCheck = self:CreateCheckbox(panel, "Enable custom unit frames (replaces Blizzard frames)",
+    local enableCheck = self:CreateCheckbox(scrollChild, "Enable custom unit frames (replaces Blizzard frames)",
         function() return db.unitFrames and db.unitFrames.enabled ~= false end,
         function(val)
             if db.unitFrames then db.unitFrames.enabled = val end
@@ -1092,7 +1109,7 @@ function E:CreateUnitFramesPanel(parent)
         end)
     enableCheck:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -10)
     
-    local info = self:CreateSubHeader(panel, "Select a unit frame to configure:")
+    local info = self:CreateSubHeader(scrollChild, "Select a unit frame to configure:")
     info:SetPoint("TOPLEFT", enableCheck, "BOTTOMLEFT", 0, -15)
     
     -- Unit frame list - only frames we actually support
@@ -1105,13 +1122,13 @@ function E:CreateUnitFramesPanel(parent)
     }
     
     -- Create tabs/buttons for each unit frame
-    local ufTabs = CreateFrame("Frame", nil, panel)
+    local ufTabs = CreateFrame("Frame", nil, scrollChild)
     ufTabs:SetSize(140, 400)
     ufTabs:SetPoint("TOPLEFT", info, "BOTTOMLEFT", 0, -15)
     
-    panel.ufSettingsFrame = CreateFrame("Frame", nil, panel, "BackdropTemplate")
+    panel.ufSettingsFrame = CreateFrame("Frame", nil, scrollChild, "BackdropTemplate")
     panel.ufSettingsFrame:SetPoint("TOPLEFT", ufTabs, "TOPRIGHT", 10, 0)
-    panel.ufSettingsFrame:SetPoint("BOTTOMRIGHT", -20, 20)
+    panel.ufSettingsFrame:SetSize(350, 400)
     panel.ufSettingsFrame:SetBackdrop({
         bgFile = "Interface\\Buttons\\WHITE8X8",
         edgeFile = "Interface\\Buttons\\WHITE8X8",
@@ -1251,7 +1268,24 @@ function E:CreateFontsPanel(parent)
     panel:SetAllPoints()
     panel:Hide()
     
-    local header = self:CreateSettingsHeader(panel, "Font Settings", -20)
+    -- Create scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 0)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 700)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    -- Style the scroll bar
+    local scrollBar = scrollFrame.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -4, -20)
+        scrollBar:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, 20)
+    end
+    
+    local header = self:CreateSettingsHeader(scrollChild, "Font Settings", -20)
     
     local db = self:GetDB()
     
@@ -1274,37 +1308,37 @@ function E:CreateFontsPanel(parent)
     end
     
     -- General Font (note: this is for future use, doesn't affect anything yet)
-    local generalLabel = self:CreateSubHeader(panel, "General UI Font")
+    local generalLabel = self:CreateSubHeader(scrollChild, "General UI Font")
     generalLabel:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -25)
     
-    local generalInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local generalInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     generalInfo:SetPoint("TOPLEFT", generalLabel, "BOTTOMLEFT", 0, -2)
     generalInfo:SetText("(Reserved for future custom UI elements)")
     generalInfo:SetTextColor(0.5, 0.5, 0.5)
     
-    local generalFont = self:CreateDropdown(panel, "Font",
+    local generalFont = self:CreateDropdown(scrollChild, "Font",
         fontOptions,
         function() return db.fonts.general.font end,
         function(val) db.fonts.general.font = val end)
     generalFont:SetPoint("TOPLEFT", generalInfo, "BOTTOMLEFT", 0, -8)
     
-    local generalSize = self:CreateSlider(panel, "Size",
+    local generalSize = self:CreateSlider(scrollChild, "Size",
         function() return db.fonts.general.size end,
         function(val) db.fonts.general.size = val end,
         8, 24, 1, "%.0f")
     generalSize:SetPoint("LEFT", generalFont, "RIGHT", 30, 0)
     
-    local generalOutline = self:CreateDropdown(panel, "Outline",
+    local generalOutline = self:CreateDropdown(scrollChild, "Outline",
         outlineOptions,
         function() return db.fonts.general.outline end,
         function(val) db.fonts.general.outline = val end)
     generalOutline:SetPoint("TOPLEFT", generalFont, "BOTTOMLEFT", 0, -15)
     
     -- Action Bar Font
-    local abLabel = self:CreateSubHeader(panel, "Action Bar Font")
+    local abLabel = self:CreateSubHeader(scrollChild, "Action Bar Font")
     abLabel:SetPoint("TOPLEFT", generalOutline, "BOTTOMLEFT", 0, -30)
     
-    local abFont = self:CreateDropdown(panel, "Font",
+    local abFont = self:CreateDropdown(scrollChild, "Font",
         fontOptions,
         function() return db.fonts.actionBars.font end,
         function(val)
@@ -1313,7 +1347,7 @@ function E:CreateFontsPanel(parent)
         end)
     abFont:SetPoint("TOPLEFT", abLabel, "BOTTOMLEFT", 0, -8)
     
-    local abSize = self:CreateSlider(panel, "Size",
+    local abSize = self:CreateSlider(scrollChild, "Size",
         function() return db.fonts.actionBars.size end,
         function(val)
             db.fonts.actionBars.size = val
@@ -1322,7 +1356,7 @@ function E:CreateFontsPanel(parent)
         6, 18, 1, "%.0f")
     abSize:SetPoint("LEFT", abFont, "RIGHT", 30, 0)
     
-    local abOutline = self:CreateDropdown(panel, "Outline",
+    local abOutline = self:CreateDropdown(scrollChild, "Outline",
         outlineOptions,
         function() return db.fonts.actionBars.outline end,
         function(val)
@@ -1332,27 +1366,27 @@ function E:CreateFontsPanel(parent)
     abOutline:SetPoint("TOPLEFT", abFont, "BOTTOMLEFT", 0, -15)
     
     -- Unit Frames Font (note: doesn't affect Blizzard frames, reserved for future custom frames)
-    local ufLabel = self:CreateSubHeader(panel, "Unit Frames Font")
+    local ufLabel = self:CreateSubHeader(scrollChild, "Unit Frames Font")
     ufLabel:SetPoint("TOPLEFT", abOutline, "BOTTOMLEFT", 0, -30)
     
-    local ufInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local ufInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     ufInfo:SetPoint("TOPLEFT", ufLabel, "BOTTOMLEFT", 0, -2)
     ufInfo:SetText("(Reserved for future custom unit frames)")
     ufInfo:SetTextColor(0.5, 0.5, 0.5)
     
-    local ufFont = self:CreateDropdown(panel, "Font",
+    local ufFont = self:CreateDropdown(scrollChild, "Font",
         fontOptions,
         function() return db.fonts.unitFrames.font end,
         function(val) db.fonts.unitFrames.font = val end)
     ufFont:SetPoint("TOPLEFT", ufInfo, "BOTTOMLEFT", 0, -8)
     
-    local ufSize = self:CreateSlider(panel, "Size",
+    local ufSize = self:CreateSlider(scrollChild, "Size",
         function() return db.fonts.unitFrames.size end,
         function(val) db.fonts.unitFrames.size = val end,
         8, 20, 1, "%.0f")
     ufSize:SetPoint("LEFT", ufFont, "RIGHT", 30, 0)
     
-    local ufOutline = self:CreateDropdown(panel, "Outline",
+    local ufOutline = self:CreateDropdown(scrollChild, "Outline",
         outlineOptions,
         function() return db.fonts.unitFrames.outline end,
         function(val) db.fonts.unitFrames.outline = val end)
@@ -1367,7 +1401,24 @@ function E:CreateDataBarsPanel(parent)
     panel:SetAllPoints()
     panel:Hide()
     
-    local header = self:CreateSettingsHeader(panel, "Data Bars", -20)
+    -- Create scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 0)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 700)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    -- Style the scroll bar
+    local scrollBar = scrollFrame.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -4, -20)
+        scrollBar:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, 20)
+    end
+    
+    local header = self:CreateSettingsHeader(scrollChild, "Data Bars", -20)
     
     local db = self:GetDB()
     if not db.dataBars then
@@ -1381,15 +1432,15 @@ function E:CreateDataBarsPanel(parent)
     local bottomDB = db.dataBars.bottom
     
     -- Top Bar section
-    local topLabel = self:CreateSubHeader(panel, "Top Data Bar")
+    local topLabel = self:CreateSubHeader(scrollChild, "Top Data Bar")
     topLabel:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -25)
     
-    local topInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local topInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     topInfo:SetPoint("TOPLEFT", topLabel, "BOTTOMLEFT", 0, -4)
     topInfo:SetText("Displays info across the top of your screen")
     topInfo:SetTextColor(0.5, 0.5, 0.5)
     
-    local topEnableCheck = self:CreateCheckbox(panel, "Enable top bar",
+    local topEnableCheck = self:CreateCheckbox(scrollChild, "Enable top bar",
         function() return topDB and topDB.enabled end,
         function(val)
             if topDB then topDB.enabled = val end
@@ -1397,7 +1448,7 @@ function E:CreateDataBarsPanel(parent)
         end)
     topEnableCheck:SetPoint("TOPLEFT", topInfo, "BOTTOMLEFT", 0, -8)
     
-    local topHeightSlider = self:CreateSlider(panel, "Height",
+    local topHeightSlider = self:CreateSlider(scrollChild, "Height",
         function() return topDB and topDB.height or 22 end,
         function(val)
             if topDB then topDB.height = val end
@@ -1405,7 +1456,7 @@ function E:CreateDataBarsPanel(parent)
         end, 18, 32, 1, "%.0f")
     topHeightSlider:SetPoint("TOPLEFT", topEnableCheck, "BOTTOMLEFT", 0, -15)
     
-    local topAlphaSlider = self:CreateSlider(panel, "Background Alpha",
+    local topAlphaSlider = self:CreateSlider(scrollChild, "Background Alpha",
         function() return topDB and topDB.alpha or 0.9 end,
         function(val)
             if topDB then topDB.alpha = val end
@@ -1415,21 +1466,21 @@ function E:CreateDataBarsPanel(parent)
         end, 0, 1, 0.1)
     topAlphaSlider:SetPoint("LEFT", topHeightSlider, "RIGHT", 40, 0)
     
-    local topElementsLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local topElementsLabel = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     topElementsLabel:SetPoint("TOPLEFT", topHeightSlider, "BOTTOMLEFT", 0, -20)
     topElementsLabel:SetText("Elements: time, fps, latency, gold, spec")
     topElementsLabel:SetTextColor(0.6, 0.6, 0.6)
     
     -- Bottom Bar section
-    local bottomLabel = self:CreateSubHeader(panel, "Bottom Data Bar")
+    local bottomLabel = self:CreateSubHeader(scrollChild, "Bottom Data Bar")
     bottomLabel:SetPoint("TOPLEFT", topElementsLabel, "BOTTOMLEFT", 0, -30)
     
-    local bottomInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local bottomInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     bottomInfo:SetPoint("TOPLEFT", bottomLabel, "BOTTOMLEFT", 0, -4)
     bottomInfo:SetText("Displays info across the bottom of your screen")
     bottomInfo:SetTextColor(0.5, 0.5, 0.5)
     
-    local bottomEnableCheck = self:CreateCheckbox(panel, "Enable bottom bar",
+    local bottomEnableCheck = self:CreateCheckbox(scrollChild, "Enable bottom bar",
         function() return bottomDB and bottomDB.enabled end,
         function(val)
             if bottomDB then bottomDB.enabled = val end
@@ -1437,7 +1488,7 @@ function E:CreateDataBarsPanel(parent)
         end)
     bottomEnableCheck:SetPoint("TOPLEFT", bottomInfo, "BOTTOMLEFT", 0, -8)
     
-    local bottomHeightSlider = self:CreateSlider(panel, "Height",
+    local bottomHeightSlider = self:CreateSlider(scrollChild, "Height",
         function() return bottomDB and bottomDB.height or 22 end,
         function(val)
             if bottomDB then bottomDB.height = val end
@@ -1445,7 +1496,7 @@ function E:CreateDataBarsPanel(parent)
         end, 18, 32, 1, "%.0f")
     bottomHeightSlider:SetPoint("TOPLEFT", bottomEnableCheck, "BOTTOMLEFT", 0, -15)
     
-    local bottomAlphaSlider = self:CreateSlider(panel, "Background Alpha",
+    local bottomAlphaSlider = self:CreateSlider(scrollChild, "Background Alpha",
         function() return bottomDB and bottomDB.alpha or 0.9 end,
         function(val)
             if bottomDB then bottomDB.alpha = val end
@@ -1455,16 +1506,16 @@ function E:CreateDataBarsPanel(parent)
         end, 0, 1, 0.1)
     bottomAlphaSlider:SetPoint("LEFT", bottomHeightSlider, "RIGHT", 40, 0)
     
-    local bottomElementsLabel = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local bottomElementsLabel = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     bottomElementsLabel:SetPoint("TOPLEFT", bottomHeightSlider, "BOTTOMLEFT", 0, -20)
     bottomElementsLabel:SetText("Elements: bags, durability, ilvl, coords, pvpqueue")
     bottomElementsLabel:SetTextColor(0.6, 0.6, 0.6)
     
     -- Available elements info
-    local availLabel = self:CreateSubHeader(panel, "Available Data Elements")
+    local availLabel = self:CreateSubHeader(scrollChild, "Available Data Elements")
     availLabel:SetPoint("TOPLEFT", bottomElementsLabel, "BOTTOMLEFT", 0, -30)
     
-    local availInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local availInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     availInfo:SetPoint("TOPLEFT", availLabel, "BOTTOMLEFT", 0, -8)
     availInfo:SetText("• time - Server/local time\n• fps - Frames per second\n• latency - Network latency\n• gold - Character gold\n• bags - Bag space\n• durability - Gear durability\n• ilvl - Item level\n• coords - Map coordinates\n• pvpqueue - PVP queue timer\n• spec - Current specialization")
     availInfo:SetTextColor(0.6, 0.6, 0.6)
@@ -1643,7 +1694,24 @@ function E:CreateChatPanel(parent)
     panel:SetAllPoints()
     panel:Hide()
     
-    local header = self:CreateSettingsHeader(panel, "Chat Settings", -20)
+    -- Create scroll frame
+    local scrollFrame = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+    scrollFrame:SetPoint("TOPLEFT", 0, 0)
+    scrollFrame:SetPoint("BOTTOMRIGHT", -26, 0)
+    
+    local scrollChild = CreateFrame("Frame", nil, scrollFrame)
+    scrollChild:SetSize(scrollFrame:GetWidth(), 700)
+    scrollFrame:SetScrollChild(scrollChild)
+    
+    -- Style the scroll bar
+    local scrollBar = scrollFrame.ScrollBar
+    if scrollBar then
+        scrollBar:ClearAllPoints()
+        scrollBar:SetPoint("TOPRIGHT", panel, "TOPRIGHT", -4, -20)
+        scrollBar:SetPoint("BOTTOMRIGHT", panel, "BOTTOMRIGHT", -4, 20)
+    end
+    
+    local header = self:CreateSettingsHeader(scrollChild, "Chat Settings", -20)
     
     -- Ensure chat defaults exist
     local db = self:GetDB()
@@ -1660,7 +1728,7 @@ function E:CreateChatPanel(parent)
         }
     end
     
-    local enableCheck = self:CreateCheckbox(panel, "Enable chat enhancements",
+    local enableCheck = self:CreateCheckbox(scrollChild, "Enable chat enhancements",
         function() return db.chat and db.chat.enabled end,
         function(val)
             if db.chat then db.chat.enabled = val end
@@ -1678,7 +1746,7 @@ function E:CreateChatPanel(parent)
         end)
     enableCheck:SetPoint("TOPLEFT", header, "BOTTOMLEFT", 0, -20)
     
-    local copyBtnCheck = self:CreateCheckbox(panel, "Show copy button on chat frames",
+    local copyBtnCheck = self:CreateCheckbox(scrollChild, "Show copy button on chat frames",
         function() return db.chat and db.chat.copyButton end,
         function(val)
             if db.chat then db.chat.copyButton = val end
@@ -1688,7 +1756,7 @@ function E:CreateChatPanel(parent)
         end)
     copyBtnCheck:SetPoint("TOPLEFT", enableCheck, "BOTTOMLEFT", 0, -8)
     
-    local styleCheck = self:CreateCheckbox(panel, "Apply dark theme to chat frames",
+    local styleCheck = self:CreateCheckbox(scrollChild, "Apply dark theme to chat frames",
         function() return db.chat and db.chat.styleFrames end,
         function(val)
             if db.chat then db.chat.styleFrames = val end
@@ -1697,15 +1765,15 @@ function E:CreateChatPanel(parent)
     styleCheck:SetPoint("TOPLEFT", copyBtnCheck, "BOTTOMLEFT", 0, -8)
     
     -- Dual Panels section
-    local dualLabel = self:CreateSubHeader(panel, "Dual Chat Panels")
+    local dualLabel = self:CreateSubHeader(scrollChild, "Dual Chat Panels")
     dualLabel:SetPoint("TOPLEFT", styleCheck, "BOTTOMLEFT", 0, -25)
     
-    local dualInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    local dualInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
     dualInfo:SetPoint("TOPLEFT", dualLabel, "BOTTOMLEFT", 0, -6)
     dualInfo:SetText("Creates a second chat panel on the right for Loot and Trade")
     dualInfo:SetTextColor(0.5, 0.5, 0.5)
     
-    local dualCheck = self:CreateCheckbox(panel, "Enable dual chat panels",
+    local dualCheck = self:CreateCheckbox(scrollChild, "Enable dual chat panels",
         function() return db.chat and db.chat.dualPanels end,
         function(val)
             if db.chat then db.chat.dualPanels = val end
@@ -1713,35 +1781,35 @@ function E:CreateChatPanel(parent)
         end)
     dualCheck:SetPoint("TOPLEFT", dualInfo, "BOTTOMLEFT", 0, -10)
     
-    local leftWidthSlider = self:CreateSlider(panel, "Left Panel Width",
+    local leftWidthSlider = self:CreateSlider(scrollChild, "Left Panel Width",
         function() return db.chat and db.chat.leftWidth or 400 end,
         function(val) if db.chat then db.chat.leftWidth = val end end,
         200, 600, 10, "%.0f")
     leftWidthSlider:SetPoint("TOPLEFT", dualCheck, "BOTTOMLEFT", 0, -15)
     
-    local leftHeightSlider = self:CreateSlider(panel, "Left Panel Height",
+    local leftHeightSlider = self:CreateSlider(scrollChild, "Left Panel Height",
         function() return db.chat and db.chat.leftHeight or 200 end,
         function(val) if db.chat then db.chat.leftHeight = val end end,
         100, 400, 10, "%.0f")
     leftHeightSlider:SetPoint("LEFT", leftWidthSlider, "RIGHT", 40, 0)
     
-    local rightWidthSlider = self:CreateSlider(panel, "Right Panel Width",
+    local rightWidthSlider = self:CreateSlider(scrollChild, "Right Panel Width",
         function() return db.chat and db.chat.rightWidth or 350 end,
         function(val) if db.chat then db.chat.rightWidth = val end end,
         200, 600, 10, "%.0f")
     rightWidthSlider:SetPoint("TOPLEFT", leftWidthSlider, "BOTTOMLEFT", 0, -10)
     
-    local rightHeightSlider = self:CreateSlider(panel, "Right Panel Height",
+    local rightHeightSlider = self:CreateSlider(scrollChild, "Right Panel Height",
         function() return db.chat and db.chat.rightHeight or 180 end,
         function(val) if db.chat then db.chat.rightHeight = val end end,
         100, 400, 10, "%.0f")
     rightHeightSlider:SetPoint("LEFT", rightWidthSlider, "RIGHT", 40, 0)
     
     -- Copy instructions
-    local copyLabel = self:CreateSubHeader(panel, "Copy Chat Messages")
+    local copyLabel = self:CreateSubHeader(scrollChild, "Copy Chat Messages")
     copyLabel:SetPoint("TOPLEFT", rightWidthSlider, "BOTTOMLEFT", 0, -25)
     
-    local copyInfo = panel:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local copyInfo = scrollChild:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     copyInfo:SetPoint("TOPLEFT", copyLabel, "BOTTOMLEFT", 0, -10)
     copyInfo:SetText("• Click the 📋 button on any chat frame\n• Or use /copychat [number] to copy a specific frame\n• Select text and Ctrl+C to copy")
     copyInfo:SetTextColor(0.7, 0.7, 0.7)
